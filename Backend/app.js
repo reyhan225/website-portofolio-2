@@ -1,6 +1,7 @@
 const express = require('express');
 const cors = require('cors');
 const path = require('path');
+const { URL } = require('url');
 const rateLimit = require('express-rate-limit');
 const {
   getAdminPassword,
@@ -12,6 +13,11 @@ const {
   issueAdminToken
 } = require('./middleware/adminAuth');
 const { getDataStoreInfo } = require('./utils/dataStore');
+const {
+  getLoginStatus,
+  registerLoginFailure,
+  resetLoginFailures
+} = require('./utils/loginGuard');
 const { validateLoginPayload } = require('./utils/validators');
 const { sendError } = require('./utils/http');
 
@@ -44,6 +50,21 @@ function buildAllowedOrigins() {
   return new Set([...defaults, ...extras]);
 }
 
+function getRequestHost(req) {
+  const host = req.get('x-forwarded-host') || req.get('host') || '';
+  return String(host).trim().toLowerCase();
+}
+
+function isSameOriginRequest(req, origin) {
+  if (!origin) return true;
+  try {
+    const parsed = new URL(origin);
+    return parsed.host.toLowerCase() === getRequestHost(req);
+  } catch {
+    return false;
+  }
+}
+
 function createApp() {
   assertProductionEnv();
   const app = express();
@@ -64,14 +85,20 @@ function createApp() {
     return next();
   });
 
-  app.use(cors({
-    origin: (origin, cb) => {
-      if (!origin || allowedOrigins.has(origin)) return cb(null, true);
-      return cb(new Error('Not allowed by CORS'));
-    },
-    methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH'],
-    allowedHeaders: ['Content-Type', 'Authorization']
-  }));
+  app.use((req, res, next) => {
+    const origin = req.get('origin');
+    const isAllowed = !origin || allowedOrigins.has(origin) || isSameOriginRequest(req, origin);
+    const options = {
+      origin: isAllowed,
+      methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH'],
+      allowedHeaders: ['Content-Type', 'Authorization']
+    };
+
+    return cors(options)(req, res, (err) => {
+      if (err || !isAllowed) return next(new Error('Not allowed by CORS'));
+      return next();
+    });
+  });
 
   app.use(express.json({ limit: '10kb' }));
   app.use(express.urlencoded({ extended: true, limit: '10kb' }));
@@ -131,15 +158,28 @@ function createApp() {
   app.use('/api/contact', contactRouter);
 
   app.post('/api/auth/login', loginLimiter, enforceAdminIp, (req, res) => {
+    res.setHeader('Cache-Control', 'no-store');
+
+    const lock = getLoginStatus(req);
+    if (lock.blocked) {
+      res.setHeader('Retry-After', String(lock.retryAfterSec));
+      return sendError(res, 429, 'Too many failed logins. Try again later.');
+    }
+
     const validation = validateLoginPayload(req.body);
-    if (!validation.ok) return sendError(res, 400, validation.error);
+    if (!validation.ok) {
+      registerLoginFailure(req);
+      return sendError(res, 400, validation.error);
+    }
 
     const password = req.body.password.trim();
     const adminPassword = getAdminPassword();
     if (!adminPassword || !compareAdminPassword(password, adminPassword)) {
+      registerLoginFailure(req);
       return sendError(res, 401, 'Invalid password');
     }
 
+    resetLoginFailures(req);
     const token = issueAdminToken();
     return res.json({
       success: true,
@@ -164,6 +204,7 @@ function createApp() {
   });
 
   app.get(adminBasePath, (req, res) => {
+    res.setHeader('Cache-Control', 'no-store');
     res.sendFile(path.join(__dirname, '../Frontend/admin.html'));
   });
 

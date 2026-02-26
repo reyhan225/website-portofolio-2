@@ -2,27 +2,30 @@
 
 Full-stack portfolio website with:
 - Public portfolio frontend
-- Admin panel for managing projects and messages
-- Express API with JSON file storage
+- Separate admin panel route
+- Express API (projects, contact, auth)
+- Vercel serverless deployment support
 
 ## Requirements
-- Node.js 18+ (recommended)
+- Node.js `24.x` (matches `package.json` engines)
 - npm
 
 ## Install Node.js (macOS)
-Using Homebrew:
+Recommended with `nvm`:
 ```bash
-brew install node
+brew install nvm
+mkdir -p ~/.nvm
+echo 'export NVM_DIR="$HOME/.nvm"' >> ~/.zshrc
+echo '[ -s "/opt/homebrew/opt/nvm/nvm.sh" ] && \. "/opt/homebrew/opt/nvm/nvm.sh"' >> ~/.zshrc
+source ~/.zshrc
+
+nvm install 24
+nvm use 24
 node -v
 npm -v
 ```
 
-If `node` is still not found in a new terminal:
-```bash
-source ~/.zshrc
-```
-
-## Quick Start
+## Quick Start (Local)
 ```bash
 npm install
 npm start
@@ -32,128 +35,94 @@ Open:
 - Portfolio: `http://localhost:3000`
 - Admin: `http://localhost:3000/secure-admin-2026`
 
-Default admin password:
+Local default admin password:
 - `admin123`
 
-## Project Structure
-```text
-Website-Portofolio 2/
-├── api/
-│   └── index.js
-├── Backend/
-│   ├── data/
-│   │   ├── messages.json
-│   │   └── projects.json
-│   ├── middleware/
-│   │   └── adminAuth.js
-│   ├── routes/
-│   │   ├── contact.js
-│   │   └── projects.js
-│   ├── package.json
-│   └── server.js
-├── Frontend/
-│   ├── admin.html
-│   ├── index.html
-│   ├── css/style.css
-│   └── js/
-│       ├── admin.js
-│       └── main.js
-├── package.json
-├── vercel.json
-└── README.md
-```
-
 ## Environment Variables
-Optional variables for Backend:
+Copy from `.env.example` and set values:
 
-- `PORT` (default: `3000`)
-- `ADMIN_PASSWORD` (default: `admin123`)
-- `ADMIN_JWT_SECRET` (default in dev: `dev-admin-secret-change-me`)
-- `ADMIN_TOKEN_TTL_SEC` (default: `3600`)
-- `ADMIN_EMAIL` (default: `reyhanmuhamadrizki1@gmail.com`)
-- `ADMIN_BASE_PATH` (default: `/secure-admin-2026`, avoid `/api`)
-- `ADMIN_ALLOWED_IPS` (optional CSV, e.g. `1.2.3.4,5.6.7.8`)
-- `NODE_ENV` (`production` requires `ADMIN_PASSWORD` and `ADMIN_JWT_SECRET`)
-- `CORS_ORIGINS` (optional CSV list, e.g. `https://yourdomain.com`)
-- `DATA_DIR` (optional path override for local filesystem mode)
+- `NODE_ENV`
+- `PORT`
+- `ADMIN_PASSWORD`
+- `ADMIN_JWT_SECRET`
+- `ADMIN_TOKEN_TTL_SEC`
+- `ADMIN_BASE_PATH`
+- `ADMIN_EMAIL`
+- `ADMIN_ALLOWED_IPS` (optional CSV allowlist)
+- `CORS_ORIGINS` (CSV origins)
+- `ADMIN_LOGIN_WINDOW_MIN`
+- `ADMIN_LOGIN_MAX_FAILURES`
+- `ADMIN_LOGIN_BLOCK_MIN`
+- `DATA_DIR` (optional local override)
 
-Example:
-```bash
-ADMIN_PASSWORD=yourStrongPassword ADMIN_JWT_SECRET=replaceThisSecret ADMIN_TOKEN_TTL_SEC=3600 npm start
-```
+Notes:
+- In production, `ADMIN_PASSWORD` and `ADMIN_JWT_SECRET` are required.
+- Admin login now includes in-memory anti-bruteforce lockout per IP+User-Agent.
 
 ## API Summary
-Base URL: `/api`
+Base path: `/api`
 
-Projects:
 - `GET /projects` (public)
 - `GET /projects/:id` (public)
 - `POST /projects` (admin)
 - `PUT /projects/:id` (admin)
 - `DELETE /projects/:id` (admin)
-
-Contact:
 - `POST /contact` (public)
 - `GET /contact` (admin)
 - `PATCH /contact/read-all` (admin)
 - `PATCH /contact/:id/read` (admin)
 - `DELETE /contact/:id` (admin)
+- `POST /auth/login` (admin password login)
+- `GET /meta` (public meta: admin email/path)
+- `GET /health` (health check)
 
-Auth:
-- `POST /auth/login` with `{ "password": "..." }`
-
-Meta:
-- `GET /meta` (public) -> includes `adminEmail` and `adminBasePath` for frontend/admin UI
-
-For admin routes, send:
-- `Authorization: Bearer <JWT_FROM_LOGIN>`
-
-## Notes
-- Data is stored in local JSON files under `Backend/data`.
-- Contact POST is rate-limited (anti-spam).
-- Login endpoint is rate-limited.
-- Admin routes are protected by expiring signed JWT bearer tokens.
-- Frontend supports theme + language toggles (saved in localStorage).
+For admin API calls, send:
+- `Authorization: Bearer <token>`
 
 ## Deploy to Vercel
-This repository now includes:
-- `vercel.json`
-- `api/index.js`
-- root `package.json`
-
-### Steps
-1. Push repository to GitHub.
-2. Import project into Vercel.
-3. Set Environment Variables:
-   - `ADMIN_PASSWORD`
-   - `ADMIN_JWT_SECRET`
-   - `NODE_ENV=production`
-   - `ADMIN_TOKEN_TTL_SEC` (optional)
-   - `ADMIN_EMAIL` (recommended: `reyhanmuhamadrizki1@gmail.com`)
-   - `ADMIN_BASE_PATH` (optional, for custom admin URL path)
-   - `ADMIN_ALLOWED_IPS` (optional but recommended for admin lock-down)
-   - `CORS_ORIGINS` (set your deployed domain)
-4. Deploy.
-
-### CLI deploy commands
+### 1. Push to GitHub
 ```bash
-npm i -g vercel
-vercel login
-vercel
-vercel --prod
+git add .
+git commit -m "deploy prep"
+git push origin main
 ```
 
-### Important Vercel data note
-- On Vercel serverless runtime, JSON writes use `/tmp` (ephemeral storage).
-- Message/project changes may not persist reliably across cold starts/redeploys.
-- For production persistence, move storage to a real database (Neon/Supabase/PlanetScale/MongoDB/Upstash, etc.).
+### 2. Import in Vercel
+- Vercel dashboard -> **Add New Project**
+- Select this repository
+- Framework preset: **Other**
 
-### Recommended admin path
-- Current default admin path is `/secure-admin-2026`.
-- You can change it by setting `ADMIN_BASE_PATH` in Vercel project environment variables.
+### 3. Set Vercel Environment Variables
+Set at least:
+- `NODE_ENV=production`
+- `ADMIN_PASSWORD=<strong-password>`
+- `ADMIN_JWT_SECRET=<long-random-secret>`
+- `ADMIN_EMAIL=reyhanmuhamadrizki1@gmail.com`
+- `CORS_ORIGINS=https://<your-domain>`
 
-### Security notes
-- Admin login and admin API routes support optional IP allowlist via `ADMIN_ALLOWED_IPS`.
-- Login/password verification uses timing-safe hash comparison.
-- Contact form includes a honeypot field to reduce bot spam.
-fIHLMEIiISMfDeapRypRw+qZzrEAKETIwpi0Mb1YsVWnR5XSpkqsbCZhTQIgQfSA
+Recommended:
+- `ADMIN_BASE_PATH=/secure-admin-2026`
+- `ADMIN_ALLOWED_IPS=<your-static-ip>` (if available)
+- `ADMIN_TOKEN_TTL_SEC=3600`
+- `ADMIN_LOGIN_WINDOW_MIN=15`
+- `ADMIN_LOGIN_MAX_FAILURES=6`
+- `ADMIN_LOGIN_BLOCK_MIN=30`
+
+### 4. Deploy
+```bash
+npx vercel --prod
+```
+
+## Maintenance Checklist
+Run this regularly:
+
+1. Rotate `ADMIN_PASSWORD` and `ADMIN_JWT_SECRET`.
+2. Verify `CORS_ORIGINS` matches only active domains.
+3. Keep `ADMIN_ALLOWED_IPS` set when possible.
+4. Check Vercel logs for repeated `401/403/429` on `/api/auth/login`.
+5. Move storage to a real database for persistent production data.
+
+## Important Data Note (Vercel)
+- JSON writes on Vercel use `/tmp` (ephemeral serverless storage).
+- Data can reset across cold starts/redeploys.
+- For reliable persistence, migrate to a database.
