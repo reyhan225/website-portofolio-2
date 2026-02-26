@@ -1,0 +1,46 @@
+[
+  {
+    "id": "1",
+    "title": "Web Application Penetration Testing Framework",
+    "description": "Developed a comprehensive automated penetration testing tool targeting OWASP Top 10 vulnerabilities. The framework performs active scanning for SQL injection, XSS, CSRF, and IDOR vulnerabilities across web applications, generating detailed reports with severity ratings and remediation guidance.",
+    "techStack": ["Python", "Selenium", "Requests", "BeautifulSoup", "SQLite", "Docker"],
+    "role": "Lead Developer & Security Researcher",
+    "impact": "Reduced manual pen-testing time by 60%. Used in 5+ client security assessments to identify critical vulnerabilities before production deployment.",
+    "github": "https://github.com/reyhan225",
+    "demo": "",
+    "category": "Security"
+  },
+  {
+    "id": "2",
+    "title": "SecureChat — End-to-End Encrypted Messaging App",
+    "description": "Built a real-time chat application with true E2E encryption using RSA-2048 key exchange and AES-256 message encryption. Messages are encrypted on the client side before transmission, ensuring the server never has access to plaintext content. Features include perfect forward secrecy and zero-knowledge key storage.",
+    "techStack": ["Node.js", "Socket.io", "Web Crypto API", "Express", "MongoDB", "React"],
+    "role": "Full Stack Developer",
+    "impact": "Achieved zero plaintext exposure architecture. Passed independent security audit with no critical findings.",
+    "github": "https://github.com/reyhan225",
+    "demo": "",
+    "category": "Full Stack"
+  },
+  {
+    "id": "3",
+    "title": "Network Intrusion Detection System",
+    "description": "Engineered a lightweight IDS using Python that monitors network traffic in real-time, identifies anomalies using signature-based and heuristic detection methods. Integrates with Snort rule sets and sends instant alerts via Telegram bot when suspicious activity is detected.",
+    "techStack": ["Python", "Scapy", "Pandas", "Snort", "Telegram API", "Linux"],
+    "role": "Security Engineer",
+    "impact": "Successfully detected and alerted on 97% of simulated attack scenarios including port scans, brute force, and ARP spoofing in lab testing.",
+    "github": "https://github.com/reyhan225",
+    "demo": "",
+    "category": "Security"
+  },
+  {
+    "id": "4",
+    "title": "EduPortal — University Learning Management System",
+    "description": "Designed and built a full-featured LMS for Bina Nusantara University students with features including course enrollment, assignment submission, grade tracking, and live video sessions. Implemented role-based access control for students, lecturers, and administrators.",
+    "techStack": ["PHP", "Laravel", "MySQL", "Bootstrap", "JavaScript", "WebRTC"],
+    "role": "Full Stack Developer",
+    "impact": "Deployed for pilot use by 200+ students. Reduced administrative overhead by 40% compared to manual processes.",
+    "github": "https://github.com/reyhan225",
+    "demo": "",
+    "category": "Full Stack"
+  }
+]

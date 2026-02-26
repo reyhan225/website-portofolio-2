@@ -1,0 +1,310 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="description" content="Reyhan Muhamad Rizki - Security Analyst & Full Stack Developer portfolio." />
+  <title>Reyhan Muhamad Rizki | Security Analyst & Full Stack Dev</title>
+  <link rel="stylesheet" href="css/style.css" />
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🔒</text></svg>" />
+</head>
+<body>
+<a class="skip-link" href="#hero">Skip to content</a>
+
+<div class="grid-bg" aria-hidden="true"></div>
+
+<!-- ===== NAVBAR ===== -->
+<nav class="navbar" role="navigation" aria-label="Main navigation">
+  <a href="#hero" class="nav-logo">reyhan<span>.dev</span></a>
+  <ul class="nav-links" id="nav-links">
+    <li><a href="#about" data-i18n="nav_about">About</a></li>
+    <li><a href="#skills" data-i18n="nav_skills">Skills</a></li>
+    <li><a href="#projects" data-i18n="nav_projects">Projects</a></li>
+    <li><a href="#casestudy" data-i18n="nav_security">Security</a></li>
+    <li><a href="#contact" data-i18n="nav_contact">Contact</a></li>
+  </ul>
+  <div class="nav-controls">
+    <button class="nav-btn" id="lang-toggle" aria-label="Toggle language">🇮🇩 ID</button>
+    <button class="nav-btn" id="theme-toggle" aria-label="Toggle theme">☀ Light</button>
+  </div>
+  <button class="hamburger" id="hamburger" aria-label="Toggle mobile menu" aria-expanded="false">
+    <span></span><span></span><span></span>
+  </button>
+</nav>
+
+<!-- ===== HERO ===== -->
+<section id="hero">
+  <div class="hero-glow" aria-hidden="true"></div>
+  <div class="hero-glow-2" aria-hidden="true"></div>
+  <div class="container">
+    <div class="hero-content">
+      <p class="hero-greeting" id="greeting-text" aria-live="polite">Good morning! Welcome to my portfolio.</p>
+      <h1 class="hero-name">Lumban Tobing<br><span class="highlight">Reyhan M. Rizki</span></h1>
+      <p class="hero-title" data-i18n="hero_subtitle">Security Analyst &amp; Full Stack Developer</p>
+      <p class="hero-tagline" aria-live="polite">
+        <span id="typed-text"></span><span class="cursor" aria-hidden="true"></span>
+      </p>
+      <div class="hero-cta">
+        <a href="#projects" class="btn btn-primary" data-i18n="hero_cta_work">View My Work</a>
+        <a href="#contact" class="btn btn-outline" data-i18n="hero_cta_contact">Get In Touch</a>
+      </div>
+      <div class="hero-stats">
+        <div class="stat-item">
+          <div class="stat-number">10+</div>
+          <div class="stat-label" data-i18n="stat_projects">Projects</div>
+        </div>
+        <div class="stat-item">
+          <div class="stat-number">15+</div>
+          <div class="stat-label" data-i18n="stat_cves">Findings</div>
+        </div>
+        <div class="stat-item">
+          <div class="stat-number">12+</div>
+          <div class="stat-label" data-i18n="stat_stacks">Tech Stacks</div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ===== ABOUT ===== -->
+<section id="about">
+  <div class="container">
+    <div class="section-header">
+      <div class="section-tag" data-i18n="about_tag">About Me</div>
+      <h2 class="section-title" data-i18n="about_title">Security-first developer from Indonesia</h2>
+    </div>
+    <div class="about-grid">
+      <div class="about-text">
+        <p data-i18n="about_p1">Hi, I'm Reyhan — a Computer Science student at Bina Nusantara University specializing in Cyber Security and Full Stack Web Development. I'm passionate about the intersection of development and security: understanding how systems are broken to build them better.</p>
+        <p data-i18n="about_p2">My journey into security started when I joined my university's Cyber Security club, where I participated in CTF competitions and began studying OWASP guidelines. I quickly realized that most web vulnerabilities come from developers overlooking security fundamentals during the build process.</p>
+        <p data-i18n="about_p3">Today I build full-stack applications with security baked in from the ground up — from sanitized inputs and proper authentication flows to encrypted data storage and penetration-tested APIs.</p>
+        <blockquote class="about-highlight" data-i18n="about_highlight">"Security is not a feature you add at the end. It's an architecture decision you make at the beginning."</blockquote>
+      </div>
+      <div class="about-details">
+        <div class="detail-card">
+          <div class="detail-label" data-i18n="detail_university">University</div>
+          <div class="detail-value">Bina Nusantara University</div>
+        </div>
+        <div class="detail-card">
+          <div class="detail-label" data-i18n="detail_major">Major</div>
+          <div class="detail-value">Computer Science</div>
+        </div>
+        <div class="detail-card">
+          <div class="detail-label" data-i18n="detail_focus">Focus</div>
+          <div class="detail-value">Cyber Security &amp; Web Development</div>
+        </div>
+        <div class="detail-card">
+          <div class="detail-label" data-i18n="detail_status">Status</div>
+          <div class="detail-value">
+            <span class="status-online">
+              <span class="status-dot"></span>
+              Open to opportunities
+            </span>
+          </div>
+        </div>
+        <div class="detail-card">
+          <div class="detail-label" data-i18n="detail_location">Location</div>
+          <div class="detail-value">Jakarta, Indonesia 🇮🇩</div>
+        </div>
+        <div class="detail-card">
+          <div class="detail-label">GitHub</div>
+          <div class="detail-value">
+            <a href="https://github.com/reyhan225" target="_blank" rel="noopener">github.com/reyhan225</a>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ===== SKILLS ===== -->
+<section id="skills">
+  <div class="container">
+    <div class="section-header">
+      <div class="section-tag" data-i18n="skills_tag">Technical Skills</div>
+      <h2 class="section-title" data-i18n="skills_title">My Technology Stack</h2>
+    </div>
+    <div class="skills-grid" id="skills-grid" aria-label="Skills grid">
+      <!-- Rendered by JS -->
+    </div>
+  </div>
+</section>
+
+<!-- ===== PROJECTS ===== -->
+<section id="projects">
+  <div class="container">
+    <div class="section-header">
+      <div class="section-tag" data-i18n="projects_tag">Portfolio</div>
+      <h2 class="section-title" data-i18n="projects_title">Projects &amp; Work</h2>
+    </div>
+    <div class="projects-filter" role="group" aria-label="Project filter">
+      <button class="filter-btn active" data-filter="All" data-i18n="projects_filter_all">All</button>
+      <button class="filter-btn" data-filter="Security" data-i18n="projects_filter_security">Security</button>
+      <button class="filter-btn" data-filter="Full Stack" data-i18n="projects_filter_fullstack">Full Stack</button>
+    </div>
+    <div class="projects-toolbar">
+      <div id="projects-summary" class="projects-summary">Showing 0 of 0 projects</div>
+      <input
+        type="search"
+        id="projects-search"
+        class="projects-search"
+        data-i18n-placeholder="projects_search_placeholder"
+        placeholder="Search projects, tech, or role..."
+        aria-label="Search projects"
+      />
+    </div>
+    <div class="projects-grid" id="projects-grid" aria-label="Projects grid">
+      <!-- Rendered by JS from API -->
+    </div>
+  </div>
+</section>
+
+<!-- ===== CASE STUDY ===== -->
+<section id="casestudy">
+  <div class="container">
+    <div class="section-header">
+      <div class="section-tag" data-i18n="security_tag">Case Study</div>
+      <h2 class="section-title" data-i18n="security_title">Security Research</h2>
+    </div>
+    <div class="case-study-card">
+      <div class="case-meta">
+        <span class="case-tag">🔴 CRITICAL VULNERABILITY</span>
+        <div class="severity-badge severity-critical">⚠ CVSS Score: 9.1 — Critical</div>
+      </div>
+      <h3 class="case-title">CVE-2023-XXXX: SQL Injection via Unsanitized Search Parameter in University Portal</h3>
+      <p class="case-summary">
+        During a penetration test of an internal university portal application, I identified a critical SQL injection vulnerability in the student search endpoint. The application passed user-supplied input directly into a dynamic SQL query without any parameterization or sanitization — exposing the entire student database to extraction.
+      </p>
+      <div class="case-grid">
+        <div class="case-block">
+          <h4 class="case-block-title vuln">🔓 Vulnerability Analysis</h4>
+          <p><strong>Type:</strong> SQL Injection (Error-Based &amp; UNION-Based)</p>
+          <p><strong>Vector:</strong> The <code>/search?q=</code> parameter was concatenated directly into a raw SQL query. No input validation, no prepared statements, no WAF.</p>
+          <p><strong>Vulnerable code pattern:</strong></p>
+          <div class="code-snippet">// VULNERABLE (never do this)
+$q = $_GET['q'];
+$sql = "SELECT * FROM students
+  WHERE name = '$q'";
+// Attacker input: ' OR '1'='1
+// Result: full table dump</div>
+          <p><strong>Impact:</strong> Attacker could extract all student names, NIM numbers, emails, grades, and admin credentials using UNION-based injection. Boolean-blind techniques also confirmed feasibility without error output.</p>
+        </div>
+        <div class="case-block">
+          <h4 class="case-block-title mitigation">✅ Mitigation Strategy</h4>
+          <p><strong>1. Parameterized Queries (Primary Fix):</strong> Replace all dynamic SQL with PDO prepared statements or an ORM layer.</p>
+          <div class="code-snippet">// SECURE - Prepared Statement
+$stmt = $pdo->prepare(
+  "SELECT * FROM students
+   WHERE name = ?"
+);
+$stmt->execute([$_GET['q']]);</div>
+          <p><strong>2. Input Validation:</strong> Whitelist allowed characters for search fields (alphanumeric + space only).</p>
+          <p><strong>3. Least Privilege:</strong> Database user account should only have SELECT permission on necessary tables — not INSERT/DROP/UPDATE.</p>
+          <p><strong>4. Error Handling:</strong> Suppress database error messages from end users. Log internally only.</p>
+          <p><strong>5. WAF Layer:</strong> Deploy ModSecurity with OWASP Core Rule Set as a defense-in-depth measure.</p>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ===== CONTACT ===== -->
+<section id="contact">
+  <div class="container">
+    <div class="section-header">
+      <div class="section-tag" data-i18n="contact_tag">Contact</div>
+      <h2 class="section-title" data-i18n="contact_title">Let's Connect</h2>
+    </div>
+    <div class="contact-grid">
+      <div class="contact-info">
+        <h3>Available for opportunities</h3>
+        <p data-i18n="contact_intro">I'm open to freelance opportunities, internship positions, and collaboration on open-source security or web projects. Feel free to reach out!</p>
+        <div class="contact-links">
+          <a id="contact-admin-email-link" class="contact-link-item" href="mailto:reyhanmuhamadrizki1@gmail.com">
+            <span class="contact-link-icon" aria-hidden="true">✉</span>
+            <span id="contact-admin-email-text">reyhanmuhamadrizki1@gmail.com</span>
+          </a>
+          <a class="contact-link-item" href="https://github.com/reyhan225" target="_blank" rel="noopener">
+            <span class="contact-link-icon" aria-hidden="true">⌥</span>
+            github.com/reyhan225
+          </a>
+          <span class="contact-link-item">
+            <span class="contact-link-icon" aria-hidden="true">📍</span>
+            Jakarta, Indonesia
+          </span>
+          <span class="contact-link-item">
+            <span class="contact-link-icon" aria-hidden="true">🎓</span>
+            Bina Nusantara University
+          </span>
+        </div>
+      </div>
+      <div class="contact-form" role="region" aria-label="Contact form">
+        <form id="contact-form" novalidate>
+          <input
+            type="text"
+            id="contact-website"
+            name="website"
+            autocomplete="off"
+            tabindex="-1"
+            aria-hidden="true"
+            class="honeypot"
+          />
+          <div class="form-row">
+            <div class="form-group">
+              <label for="contact-name" data-i18n="form_name">Your Name</label>
+              <input type="text" id="contact-name" name="name" data-i18n-placeholder="form_placeholder_name" placeholder="John Doe" autocomplete="name" required aria-required="true" />
+            </div>
+            <div class="form-group">
+              <label for="contact-email" data-i18n="form_email">Email Address</label>
+              <input type="email" id="contact-email" name="email" data-i18n-placeholder="form_placeholder_email" placeholder="john@example.com" autocomplete="email" required aria-required="true" />
+            </div>
+          </div>
+          <div class="form-group">
+            <label for="contact-subject" data-i18n="form_subject">Subject</label>
+            <input type="text" id="contact-subject" name="subject" data-i18n-placeholder="form_placeholder_subject" placeholder="Project Collaboration / Internship / Other" />
+          </div>
+          <div class="form-group">
+            <label for="contact-message" data-i18n="form_message">Message</label>
+            <textarea id="contact-message" name="message" rows="5" data-i18n-placeholder="form_placeholder_message" placeholder="Tell me about your project or opportunity..." required aria-required="true"></textarea>
+          </div>
+          <button type="submit" class="btn btn-primary btn-full" data-i18n="form_send">Send Message</button>
+          <div id="form-alert" class="form-alert" role="alert" aria-live="assertive"></div>
+        </form>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ===== FOOTER ===== -->
+<footer>
+  <p class="footer-text">
+    <span data-i18n="footer_text">Designed &amp; Built with security in mind by</span>
+    <span> <a href="#hero">Reyhan Muhamad Rizki</a></span>
+    &nbsp;·&nbsp;
+    <span>© <script>document.write(new Date().getFullYear())</script></span>
+    &nbsp;·&nbsp;
+    <span>Node.js + Express + Vanilla JS</span>
+  </p>
+</footer>
+
+<!-- ===== TERMINAL EASTER EGG ===== -->
+<div id="terminal-container" aria-label="Terminal easter egg">
+  <div id="terminal-window" class="terminal-window" role="region" aria-label="Interactive terminal">
+    <div class="terminal-header" aria-hidden="true">
+      <span class="term-dot term-dot-red"></span>
+      <span class="term-dot term-dot-yellow"></span>
+      <span class="term-dot term-dot-green"></span>
+      <span class="terminal-title">reyhan@portfolio:~</span>
+    </div>
+    <div class="terminal-body" id="terminal-body" aria-live="polite"></div>
+    <div class="terminal-input-line">
+      <label for="terminal-input" class="terminal-input-label" aria-label="Terminal prompt">reyhan@portfolio:~$</label>
+      <input type="text" id="terminal-input" class="terminal-input" placeholder="type 'help'" autocomplete="off" aria-label="Terminal input" />
+    </div>
+  </div>
+  <button id="terminal-toggle" class="terminal-toggle" aria-label="Toggle terminal" title="Open Terminal (Easter Egg)" aria-expanded="false">⌨</button>
+</div>
+
+<script src="js/main.js"></script>
+</body>
+</html>

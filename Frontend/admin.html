@@ -1,0 +1,161 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Admin Panel | Reyhan Portfolio</title>
+  <link rel="stylesheet" href="/css/style.css" />
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🔐</text></svg>" />
+</head>
+<body class="admin-body">
+
+<div class="grid-bg" aria-hidden="true"></div>
+
+<!-- ===== LOGIN SECTION ===== -->
+<div id="login-section" class="admin-login" role="main">
+  <div class="login-card">
+    <div class="login-logo">reyhan.dev/admin</div>
+    <h2>Admin Panel</h2>
+    <p>Enter admin password to continue.</p>
+    <p class="admin-login-help">
+      Admin email:
+      <a id="admin-email-link-login" href="mailto:reyhanmuhamadrizki1@gmail.com">reyhanmuhamadrizki1@gmail.com</a>
+    </p>
+    <form id="login-form" novalidate>
+      <div class="form-group">
+        <label for="admin-password">Password</label>
+        <input
+          type="password"
+          id="admin-password"
+          name="password"
+          placeholder="Enter admin password"
+          required
+          aria-required="true"
+          autocomplete="current-password"
+        />
+      </div>
+      <button type="submit" class="btn btn-primary btn-full">
+        Login
+      </button>
+    </form>
+    <p class="admin-back-link-wrap">
+      <a href="/" class="admin-back-link">← Back to Portfolio</a>
+    </p>
+  </div>
+</div>
+
+<!-- ===== ADMIN PANEL ===== -->
+<div id="admin-panel" class="admin-panel" role="main">
+  <div class="admin-wrapper">
+
+    <!-- Alert Banner -->
+    <div id="admin-alert" class="alert-banner" role="alert" aria-live="assertive"></div>
+
+    <!-- Header -->
+    <div class="admin-header">
+      <h1>Admin Panel <span>reyhan.dev</span></h1>
+      <div class="admin-header-actions">
+        <a href="/" class="btn-secondary-sm">← Portfolio</a>
+        <button id="logout-btn" class="btn-danger">Logout</button>
+      </div>
+    </div>
+
+    <!-- Tabs -->
+    <div class="admin-tabs" role="tablist">
+      <button class="admin-tab active" data-tab="messages" role="tab" aria-selected="true">
+        📨 Messages
+      </button>
+      <button class="admin-tab" data-tab="projects" role="tab" aria-selected="false">
+        📁 Projects
+      </button>
+    </div>
+
+    <!-- ===== TAB: MESSAGES ===== -->
+    <div id="tab-messages" class="tab-content active" role="tabpanel">
+      <div class="admin-card">
+        <div class="admin-card-header">
+          <h3>Inbox</h3>
+          <div class="admin-card-actions">
+            <span id="msg-count" class="admin-count">Loading...</span>
+            <button id="mark-all-read-btn" type="button" class="btn-secondary-sm">Mark All Read</button>
+          </div>
+        </div>
+        <div id="messages-container">
+          <div class="empty-state">Loading messages...</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ===== TAB: PROJECTS ===== -->
+    <div id="tab-projects" class="tab-content" role="tabpanel">
+
+      <!-- Projects List -->
+      <div class="admin-card">
+        <div class="admin-card-header">
+          <h3>All Projects</h3>
+        </div>
+        <div id="projects-container">
+          <div class="empty-state">Loading projects...</div>
+        </div>
+      </div>
+
+      <!-- Project Form -->
+      <div class="admin-card" id="project-form-card">
+        <div class="admin-card-header">
+          <h3 id="proj-form-title-heading">Add New Project</h3>
+        </div>
+        <form id="project-form" novalidate>
+          <div class="project-form-grid">
+            <div class="form-group">
+              <label for="proj-title">Project Title *</label>
+              <input type="text" id="proj-title" placeholder="e.g., Network Intrusion Detection System" required aria-required="true" />
+            </div>
+            <div class="form-group">
+              <label for="proj-category">Category</label>
+              <select id="proj-category">
+                <option value="Security">Security</option>
+                <option value="Full Stack">Full Stack</option>
+                <option value="Frontend">Frontend</option>
+                <option value="Backend">Backend</option>
+                <option value="General">General</option>
+              </select>
+            </div>
+            <div class="form-group form-group-full">
+              <label for="proj-description">Description *</label>
+              <textarea id="proj-description" rows="3" placeholder="Detailed description of the project, what it does, and your approach..." required aria-required="true"></textarea>
+            </div>
+            <div class="form-group">
+              <label for="proj-tech">Tech Stack (comma-separated)</label>
+              <input type="text" id="proj-tech" placeholder="Node.js, React, MongoDB, JWT" />
+            </div>
+            <div class="form-group">
+              <label for="proj-role">Your Role *</label>
+              <input type="text" id="proj-role" placeholder="e.g., Lead Full Stack Developer" required aria-required="true" />
+            </div>
+            <div class="form-group form-group-full">
+              <label for="proj-impact">Impact / Results</label>
+              <input type="text" id="proj-impact" placeholder="e.g., Reduced load time by 60%, detected 15 vulnerabilities..." />
+            </div>
+            <div class="form-group">
+              <label for="proj-github">GitHub URL</label>
+              <input type="url" id="proj-github" placeholder="https://github.com/reyhan225/..." />
+            </div>
+            <div class="form-group">
+              <label for="proj-demo">Live Demo URL</label>
+              <input type="url" id="proj-demo" placeholder="https://..." />
+            </div>
+          </div>
+          <div class="form-buttons">
+            <button type="submit" class="btn-sm">Save Project</button>
+            <button type="button" id="cancel-edit-btn" class="btn-secondary-sm">Cancel / Reset</button>
+          </div>
+        </form>
+      </div>
+    </div><!-- end tab-projects -->
+
+  </div><!-- end admin-wrapper -->
+</div><!-- end admin-panel -->
+
+<script src="/js/admin.js"></script>
+</body>
+</html>
