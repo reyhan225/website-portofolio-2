@@ -38,6 +38,12 @@ Open:
 Local default admin password:
 - `admin123`
 
+## Live Domains
+- Portfolio (primary): `https://reyhan-muhamad-rizki.vercel.app`
+- Portfolio (old -> redirects): `https://website-portofolio-2.vercel.app`
+- Admin shortcut domain: `https://admin-reyhan-muhamad-rizki.vercel.app`
+  - This domain auto-redirects to the secure admin path (`/secure-admin-2026`).
+
 ## Environment Variables
 Copy from `.env.example` and set values:
 
@@ -111,6 +117,12 @@ Recommended:
 ### 4. Deploy
 ```bash
 npx vercel --prod
+```
+
+### 5. Add Vercel Domains (optional)
+```bash
+npx vercel domains add reyhan-muhamad-rizki.vercel.app
+npx vercel domains add admin-reyhan-muhamad-rizki.vercel.app
 ```
 
 ## Maintenance Checklist
