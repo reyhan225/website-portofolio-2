@@ -2,16 +2,10 @@
   "version": 2,
   "functions": {
     "api/index.js": {
-      "includeFiles": [
-        "Frontend/**",
-        "Backend/data/**"
-      ]
+      "includeFiles": "**/*"
     }
   },
   "routes": [
-    {
-      "src": "/(.*)",
-      "dest": "/api/index.js"
-    }
+    { "src": "/(.*)", "dest": "/api/index.js" }
   ]
 }
