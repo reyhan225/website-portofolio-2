@@ -25,6 +25,8 @@ const projectsRouter = require('./routes/projects');
 const contactRouter = require('./routes/contact');
 
 const isProduction = process.env.NODE_ENV === 'production';
+const OLD_DOMAIN = 'website-portofolio-2.vercel.app';
+const NEW_DOMAIN = 'reyhan-muhamad-rizki.vercel.app';
 
 function assertProductionEnv() {
   if (!isProduction) return;
@@ -83,6 +85,14 @@ function createApp() {
       res.setHeader('Strict-Transport-Security', 'max-age=31536000; includeSubDomains');
     }
     return next();
+  });
+
+  app.use((req, res, next) => {
+    const host = getRequestHost(req);
+    if (host !== OLD_DOMAIN) return next();
+
+    const target = `https://${NEW_DOMAIN}${req.originalUrl || '/'}`;
+    return res.redirect(308, target);
   });
 
   app.use((req, res, next) => {
