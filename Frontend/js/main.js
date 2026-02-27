@@ -233,22 +233,22 @@ function typeWriter() {
 const skillsData = [
   {
     icon: '🖥',
-    titleKey: 'Frontend',
+    titleKey: 'skill_frontend',
     skills: ['HTML5', 'CSS3', 'JavaScript (ES6+)', 'React', 'Vue.js', 'Tailwind CSS', 'Bootstrap']
   },
   {
     icon: '⚙',
-    titleKey: 'Backend',
+    titleKey: 'skill_backend',
     skills: ['Node.js', 'Express', 'Python', 'Flask', 'Laravel', 'PHP', 'REST APIs', 'WebSockets']
   },
   {
     icon: '🔒',
-    titleKey: 'Security',
+    titleKey: 'skill_security',
     skills: ['Penetration Testing', 'OWASP Top 10', 'Burp Suite', 'Metasploit', 'Nmap', 'Wireshark', 'CTF Competitions', 'SIEM']
   },
   {
     icon: '🛠',
-    titleKey: 'Tools & Databases',
+    titleKey: 'skill_tools',
     skills: ['Git', 'Docker', 'Linux', 'MySQL', 'PostgreSQL', 'MongoDB', 'Redis', 'Nginx']
   }
 ];
@@ -260,7 +260,7 @@ function renderSkills() {
     <div class="skill-category">
       <div class="skill-cat-header">
         <span class="skill-icon">${cat.icon}</span>
-        <span class="skill-cat-title">${cat.titleKey}</span>
+        <span class="skill-cat-title">${t(cat.titleKey)}</span>
       </div>
       <div class="skill-list">
         ${cat.skills.map(s => `<span class="skill-tag">${s}</span>`).join('')}
@@ -276,11 +276,30 @@ let activeFilter = 'All';
 let projectSearch = '';
 let hasLoadedProjects = false;
 
+function getSkeletonCards(count = 6) {
+  return Array(count).fill(0).map(() => `
+    <div class="skeleton-card">
+      <div class="skeleton skeleton-header"></div>
+      <div class="skeleton skeleton-title"></div>
+      <div class="skeleton skeleton-text"></div>
+      <div class="skeleton skeleton-text-short"></div>
+      <div class="skeleton-tags">
+        <div class="skeleton skeleton-tag"></div>
+        <div class="skeleton skeleton-tag"></div>
+        <div class="skeleton skeleton-tag"></div>
+      </div>
+    </div>
+  `).join('');
+}
+
 async function loadProjects() {
   const grid = document.getElementById('projects-grid');
   if (!grid) return;
   hasLoadedProjects = false;
-  grid.innerHTML = `<div class="loading-text">${t('projects_loading')}</div>`;
+  
+  // Show skeleton loading state
+  grid.innerHTML = getSkeletonCards(6);
+  updateProjectsSummary(0, 0);
 
   try {
     const res = await fetch(`${API_BASE}/projects`);
@@ -401,8 +420,11 @@ async function handleContactSubmit(e) {
     return;
   }
 
+  // Add loading state with spinner
   btn.disabled = true;
-  btn.textContent = t('form_sending');
+  btn.classList.add('btn-loading');
+  const originalText = btn.textContent;
+  btn.textContent = '';
 
   try {
     const res = await fetch(`${API_BASE}/contact`, {
@@ -423,6 +445,7 @@ async function handleContactSubmit(e) {
     showFormAlert(alert, t('form_network_error'), 'error');
   } finally {
     btn.disabled = false;
+    btn.classList.remove('btn-loading');
     btn.setAttribute('data-i18n', 'form_send');
     btn.textContent = t('form_send');
   }
@@ -609,7 +632,7 @@ function initMobileNav() {
 // ===== ESCAPE HTML =====
 function escapeHtml(str) {
   if (typeof str !== 'string') return '';
-  return str.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
+  return str.replace(/&/g, '&amp;').replace(/</g, '<').replace(/>/g, '>').replace(/"/g, '"');
 }
 
 function safeUrl(value) {
@@ -695,6 +718,7 @@ document.addEventListener('DOMContentLoaded', () => {
     if (btn) btn.textContent = currentLang === 'en' ? '🇮🇩 ID' : '🇬🇧 EN';
     applyTranslations();
     document.getElementById('greeting-text').textContent = getGreeting();
+    renderSkills(); // Re-render skills with new language
     if (typingTimeout) clearTimeout(typingTimeout);
     charIndex = 0;
     typingIndex = 0;

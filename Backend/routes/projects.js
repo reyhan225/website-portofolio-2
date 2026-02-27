@@ -5,12 +5,12 @@ const { validateProjectPayload } = require('../utils/validators');
 const { sendError } = require('../utils/http');
 const router = express.Router();
 
-function readProjects() {
-  return readJsonArray('projects.json');
+async function readProjects() {
+  return await readJsonArray('projects.json');
 }
 
-function writeProjects(data) {
-  writeJsonArray('projects.json', data);
+async function writeProjects(data) {
+  await writeJsonArray('projects.json', data);
 }
 
 function sanitizeString(str) {
@@ -45,21 +45,21 @@ function normalizeProject(project) {
 }
 
 // GET all projects
-router.get('/', (req, res) => {
-  const projects = readProjects();
+router.get('/', async (req, res) => {
+  const projects = await readProjects();
   res.json(projects.map(normalizeProject));
 });
 
 // GET single project
-router.get('/:id', (req, res) => {
-  const projects = readProjects();
+router.get('/:id', async (req, res) => {
+  const projects = await readProjects();
   const project = projects.find(p => String(p.id) === String(req.params.id));
   if (!project) return sendError(res, 404, 'Project not found');
   res.json(normalizeProject(project));
 });
 
 // POST create project
-router.post('/', requireAdmin, (req, res) => {
+router.post('/', requireAdmin, async (req, res) => {
   const validation = validateProjectPayload(req.body, { partial: false });
   if (!validation.ok) return sendError(res, 400, validation.error);
 
@@ -68,7 +68,7 @@ router.post('/', requireAdmin, (req, res) => {
 
     const incomingTech = Array.isArray(tech) ? tech : (Array.isArray(techStack) ? techStack : []);
     const safeTech = incomingTech.map(t => sanitizeString(t)).filter(Boolean).slice(0, 30);
-    const projects = readProjects();
+    const projects = await readProjects();
     const newProject = {
       id: `${Date.now()}${Math.floor(Math.random() * 1000)}`,
       title: sanitizeString(title),
@@ -82,7 +82,7 @@ router.post('/', requireAdmin, (req, res) => {
       category: sanitizeString(category || 'General')
     };
     projects.push(newProject);
-    writeProjects(projects);
+    await writeProjects(projects);
     res.status(201).json(normalizeProject(newProject));
   } catch {
     sendError(res, 500, 'Failed to store project');
@@ -90,12 +90,12 @@ router.post('/', requireAdmin, (req, res) => {
 });
 
 // PUT update project
-router.put('/:id', requireAdmin, (req, res) => {
+router.put('/:id', requireAdmin, async (req, res) => {
   const validation = validateProjectPayload(req.body, { partial: true });
   if (!validation.ok) return sendError(res, 400, validation.error);
 
   try {
-    const projects = readProjects();
+    const projects = await readProjects();
     const idx = projects.findIndex(p => String(p.id) === String(req.params.id));
     if (idx === -1) return sendError(res, 404, 'Project not found');
     const { title, description, tech, techStack, role, impact, github, demo, category } = req.body;
@@ -115,7 +115,7 @@ router.put('/:id', requireAdmin, (req, res) => {
       demo: demo !== undefined ? sanitizeUrl(demo) : current.demo,
       category: sanitizeString(category || current.category)
     };
-    writeProjects(projects);
+    await writeProjects(projects);
     res.json(normalizeProject(projects[idx]));
   } catch {
     sendError(res, 500, 'Failed to update project');
@@ -123,13 +123,13 @@ router.put('/:id', requireAdmin, (req, res) => {
 });
 
 // DELETE project
-router.delete('/:id', requireAdmin, (req, res) => {
+router.delete('/:id', requireAdmin, async (req, res) => {
   try {
-    const projects = readProjects();
+    const projects = await readProjects();
     const idx = projects.findIndex(p => String(p.id) === String(req.params.id));
     if (idx === -1) return sendError(res, 404, 'Project not found');
     const deleted = projects.splice(idx, 1)[0];
-    writeProjects(projects);
+    await writeProjects(projects);
     res.json(normalizeProject(deleted));
   } catch {
     sendError(res, 500, 'Failed to delete project');
