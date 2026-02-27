@@ -3,7 +3,16 @@ function isNonEmptyString(value) {
 }
 
 function isValidEmail(email) {
-  return typeof email === 'string' && /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
+  // First check basic email format
+  if (typeof email !== 'string' || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+    return false;
+  }
+  // Then check for Gmail domain (case insensitive)
+  const emailLower = email.toLowerCase();
+  if (!emailLower.endsWith('@gmail.com')) {
+    return false;
+  }
+  return true;
 }
 
 function validateLoginPayload(body) {
@@ -76,7 +85,7 @@ function validateContactPayload(body) {
   if (!isNonEmptyString(body.name)) return { ok: false, error: 'name is required' };
   if (!isNonEmptyString(body.email)) return { ok: false, error: 'email is required' };
   if (!isNonEmptyString(body.message)) return { ok: false, error: 'message is required' };
-  if (!isValidEmail(body.email)) return { ok: false, error: 'Invalid email address' };
+  if (!isValidEmail(body.email)) return { ok: false, error: 'Please use a valid Gmail address (@gmail.com)' };
   if (body.subject !== undefined && typeof body.subject !== 'string') {
     return { ok: false, error: 'subject must be a string' };
   }

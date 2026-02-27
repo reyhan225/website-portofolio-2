@@ -10,7 +10,8 @@ const {
   getAdminBasePath,
   enforceAdminIp,
   compareAdminPassword,
-  issueAdminToken
+  issueAdminToken,
+  requireAdmin
 } = require('./middleware/adminAuth');
 const { getDataStoreInfo } = require('./utils/dataStore');
 const {
@@ -20,9 +21,12 @@ const {
 } = require('./utils/loginGuard');
 const { validateLoginPayload } = require('./utils/validators');
 const { sendError } = require('./utils/http');
+const { checkFirebaseHealth } = require('./utils/firebase');
+const { cache } = require('./utils/cache');
 
 const projectsRouter = require('./routes/projects');
 const contactRouter = require('./routes/contact');
+const analyticsRouter = require('./routes/analytics');
 
 const isProduction = process.env.NODE_ENV === 'production';
 const OLD_DOMAIN = 'website-portofolio-2.vercel.app';
@@ -178,8 +182,36 @@ function createApp() {
 
   app.use(express.static(path.join(__dirname, '../Frontend')));
 
+  // Performance logging middleware
+  app.use((req, res, next) => {
+    const start = Date.now();
+    const requestId = `${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
+    
+    req.requestId = requestId;
+    req.startTime = start;
+    
+    // Log request start in development
+    if (process.env.NODE_ENV !== 'production') {
+      console.log(`[${requestId}] ${req.method} ${req.path} - Started`);
+    }
+    
+    // Capture response finish
+    res.on('finish', () => {
+      const duration = Date.now() - start;
+      const status = res.statusCode;
+      
+      // Log slow requests (> 1000ms) in production, all in development
+      if (process.env.NODE_ENV !== 'production' || duration > 1000) {
+        console.log(`[${requestId}] ${req.method} ${req.path} - ${status} - ${duration}ms`);
+      }
+    });
+    
+    next();
+  });
+
   app.use('/api/projects', projectsRouter);
   app.use('/api/contact', contactRouter);
+  app.use('/api/analytics', analyticsRouter);
 
   app.post('/api/auth/login', loginLimiter, enforceAdminIp, (req, res) => {
     res.setHeader('Cache-Control', 'no-store');
@@ -223,8 +255,35 @@ function createApp() {
     });
   });
 
-  app.get('/api/health', (req, res) => {
-    res.json({ success: true, message: 'Server is running', timestamp: new Date().toISOString() });
+  app.get('/api/health', async (req, res) => {
+    const firebaseHealth = await checkFirebaseHealth();
+    const cacheStats = cache.getStats();
+    
+    res.json({ 
+      success: true, 
+      message: 'Server is running', 
+      timestamp: new Date().toISOString(),
+      firebase: firebaseHealth,
+      cache: cacheStats,
+      uptime: process.uptime()
+    });
+  });
+
+  // Cache stats endpoint (admin)
+  app.get('/api/cache/stats', requireAdmin, (req, res) => {
+    res.json({
+      success: true,
+      cache: cache.getStats()
+    });
+  });
+
+  // Clear cache endpoint (admin)
+  app.post('/api/cache/clear', requireAdmin, (req, res) => {
+    cache.clear();
+    res.json({
+      success: true,
+      message: 'Cache cleared successfully'
+    });
   });
 
   app.get(adminBasePath, (req, res) => {
@@ -232,12 +291,37 @@ function createApp() {
     res.sendFile(path.join(__dirname, '../Frontend/admin.html'));
   });
 
+  // Centralized error handler
   app.use((err, req, res, next) => {
     if (!err) return next();
+    
+    // Log error with request context
+    const requestId = req.requestId || 'unknown';
+    const duration = req.startTime ? Date.now() - req.startTime : 'unknown';
+    
+    console.error(`[${requestId}] Error: ${err.message} (${duration}ms)`);
+    
     if (err.message === 'Not allowed by CORS') {
       return sendError(res, 403, 'Origin is not allowed');
     }
-    return sendError(res, 500, 'Internal server error');
+    
+    // Firestore-specific errors
+    if (err.code && err.code.startsWith('firestore/')) {
+      return sendError(res, 503, 'Database service unavailable. Please try again later.');
+    }
+    
+    if (err.message?.includes('Firebase not initialized')) {
+      return sendError(res, 503, 'Database connection error. Please try again later.');
+    }
+    
+    // Validation errors
+    if (err.name === 'ValidationError') {
+      return sendError(res, 400, err.message);
+    }
+    
+    // Default error response
+    const isDev = process.env.NODE_ENV === 'development';
+    return sendError(res, 500, 'Internal server error', isDev ? err.message : undefined);
   });
 
   app.use('/api', (req, res) => {

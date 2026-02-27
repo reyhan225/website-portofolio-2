@@ -169,8 +169,9 @@ async function loadMessages() {
 
     if (!res.ok) throw new Error('Failed to load messages');
 
-    allMessages = await parseJsonSafe(res);
-    if (!Array.isArray(allMessages)) allMessages = [];
+    const json = await parseJsonSafe(res);
+    // Backend returns { success, data, pagination, fromCache }
+    allMessages = json.data && Array.isArray(json.data) ? json.data : [];
     renderMessages();
   } catch {
     const container = document.getElementById('messages-container');
@@ -318,8 +319,9 @@ async function loadAdminProjects() {
     const res = await fetch(`${API_BASE}/projects`);
     if (!res.ok) throw new Error('Error');
 
-    allAdminProjects = await parseJsonSafe(res);
-    if (!Array.isArray(allAdminProjects)) allAdminProjects = [];
+    const json = await parseJsonSafe(res);
+    // Backend returns { success, data, pagination, fromCache }
+    allAdminProjects = json.data && Array.isArray(json.data) ? json.data : [];
 
     renderAdminProjects();
   } catch {
