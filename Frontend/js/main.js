@@ -288,7 +288,8 @@ function typeWriter() {
     return;
   }
 
-  const current = taglines[typingIndex];
+  let current = taglines[typingIndex];
+
   // Advance or retreat the cursor
   if (isDeleting) {
     charIndex = Math.max(0, charIndex - 1);
@@ -296,7 +297,7 @@ function typeWriter() {
     charIndex = Math.min(current.length, charIndex + 1);
   }
 
-  el.textContent = current.slice(0, charIndex);
+  el.textContent = current.slice(0, charIndex || 1); // never render empty
 
   // At full string: pause, then start deleting
   if (!isDeleting && charIndex === current.length) {
@@ -309,7 +310,10 @@ function typeWriter() {
   if (isDeleting && charIndex === 0) {
     isDeleting = false;
     typingIndex = (typingIndex + 1) % taglines.length;
-    typingTimeout = setTimeout(typeWriter, 180);
+    current = taglines[typingIndex];
+    charIndex = 1;
+    el.textContent = current.slice(0, 1);
+    typingTimeout = setTimeout(typeWriter, 120);
     return;
   }
 
