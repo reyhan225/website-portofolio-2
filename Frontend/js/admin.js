@@ -10,6 +10,8 @@ let authToken = sessionStorage.getItem(ADMIN_TOKEN_KEY) || null;
 let editingProjectId = null;
 let allMessages = [];
 let allAdminProjects = [];
+let messageSearch = '';
+let messageUnreadOnly = false;
 
 // ===== THEME =====
 const savedTheme = localStorage.getItem('theme') || 'dark';
@@ -192,7 +194,24 @@ function renderMessages() {
     markAllBtn.textContent = unread === 0 ? 'All Read' : `Mark All Read (${unread})`;
   }
 
-  if (!allMessages.length) {
+  let filtered = allMessages;
+  const q = messageSearch.trim().toLowerCase();
+  if (q) {
+    filtered = filtered.filter(m => {
+      const blob = [
+        m.name,
+        m.email,
+        m.subject,
+        m.message
+      ].join(' ').toLowerCase();
+      return blob.includes(q);
+    });
+  }
+  if (messageUnreadOnly) {
+    filtered = filtered.filter(m => !m.read);
+  }
+
+  if (!filtered.length) {
     container.innerHTML = '<div class="empty-state">No messages yet.</div>';
     return;
   }
@@ -209,7 +228,7 @@ function renderMessages() {
         </tr>
       </thead>
       <tbody>
-        ${allMessages.map(m => `
+        ${filtered.map(m => `
           <tr>
             <td>
               <div class="msg-from">${escHtml(m.name)}${!m.read ? '<span class="badge-unread">NEW</span>' : ''}</div>
@@ -313,6 +332,10 @@ async function deleteMessage(id) {
   }
 }
 
+function refreshMessages() {
+  loadMessages();
+}
+
 // ===== PROJECTS =====
 async function loadAdminProjects() {
   try {
@@ -338,6 +361,9 @@ function renderAdminProjects() {
     container.innerHTML = '<div class="empty-state">No projects yet. Create one below.</div>';
     return;
   }
+
+  const projCount = document.getElementById('proj-count');
+  if (projCount) projCount.textContent = `${allAdminProjects.length} projects`;
 
   container.innerHTML = `
     <table class="admin-table">
@@ -476,6 +502,36 @@ async function deleteProject(id) {
   }
 }
 
+function refreshProjects() {
+  loadAdminProjects();
+}
+
+async function clearCache() {
+  if (!authToken) {
+    handleUnauthorized('Please login first.');
+    return;
+  }
+  try {
+    const res = await fetch(`${API_BASE}/cache/clear`, {
+      method: 'POST',
+      headers: authHeaders()
+    });
+    if (res.status === 401 || res.status === 403) {
+      handleUnauthorized();
+      return;
+    }
+    const data = await parseJsonSafe(res);
+    if (!res.ok) {
+      showBanner('error', data.error || 'Failed to clear cache.');
+      return;
+    }
+    showBanner('success', 'Cache cleared. Reloading projects…');
+    await loadAdminProjects();
+  } catch {
+    showBanner('error', 'Network error.');
+  }
+}
+
 // ===== UTILS =====
 function showBanner(type, msg) {
   const banner = document.getElementById('admin-alert');
@@ -511,6 +567,18 @@ document.addEventListener('DOMContentLoaded', async () => {
   await loadMeta();
 
   document.getElementById('mark-all-read-btn')?.addEventListener('click', markAllRead);
+  document.getElementById('refresh-messages-btn')?.addEventListener('click', refreshMessages);
+  document.getElementById('refresh-projects-btn')?.addEventListener('click', refreshProjects);
+  document.getElementById('clear-cache-btn')?.addEventListener('click', clearCache);
+
+  document.getElementById('msg-search')?.addEventListener('input', e => {
+    messageSearch = e.target.value || '';
+    renderMessages();
+  });
+  document.getElementById('msg-unread-only')?.addEventListener('change', e => {
+    messageUnreadOnly = !!e.target.checked;
+    renderMessages();
+  });
 
   if (authToken) {
     showAdminView();

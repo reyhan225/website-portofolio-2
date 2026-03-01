@@ -72,32 +72,45 @@
 
     <!-- ===== TAB: MESSAGES ===== -->
     <div id="tab-messages" class="tab-content active" role="tabpanel">
-      <div class="admin-card">
-        <div class="admin-card-header">
-          <h3>Inbox</h3>
-          <div class="admin-card-actions">
-            <span id="msg-count" class="admin-count">Loading...</span>
-            <button id="mark-all-read-btn" type="button" class="btn-secondary-sm">Mark All Read</button>
+        <div class="admin-card">
+          <div class="admin-card-header">
+            <h3>Inbox</h3>
+            <div class="admin-card-actions">
+              <span id="msg-count" class="admin-count">Loading...</span>
+              <button id="refresh-messages-btn" type="button" class="btn-secondary-sm">Refresh</button>
+              <button id="mark-all-read-btn" type="button" class="btn-secondary-sm">Mark All Read</button>
+            </div>
+          </div>
+          <div class="admin-filters">
+            <input type="search" id="msg-search" placeholder="Search name, email, subject, message…" aria-label="Search messages" />
+            <label class="inline-checkbox">
+              <input type="checkbox" id="msg-unread-only" />
+              Unread only
+            </label>
+          </div>
+          <div id="messages-container">
+            <div class="empty-state">Loading messages...</div>
           </div>
         </div>
-        <div id="messages-container">
-          <div class="empty-state">Loading messages...</div>
-        </div>
       </div>
-    </div>
 
     <!-- ===== TAB: PROJECTS ===== -->
     <div id="tab-projects" class="tab-content" role="tabpanel">
 
-      <!-- Projects List -->
-      <div class="admin-card">
-        <div class="admin-card-header">
-          <h3>All Projects</h3>
+        <!-- Projects List -->
+        <div class="admin-card">
+          <div class="admin-card-header">
+            <h3>All Projects</h3>
+            <div class="admin-card-actions">
+              <span id="proj-count" class="admin-count">Loading...</span>
+              <button id="refresh-projects-btn" type="button" class="btn-secondary-sm">Refresh</button>
+              <button id="clear-cache-btn" type="button" class="btn-secondary-sm">Clear Cache</button>
+            </div>
+          </div>
+          <div id="projects-container">
+            <div class="empty-state">Loading projects...</div>
+          </div>
         </div>
-        <div id="projects-container">
-          <div class="empty-state">Loading projects...</div>
-        </div>
-      </div>
 
       <!-- Project Form -->
       <div class="admin-card" id="project-form-card">
