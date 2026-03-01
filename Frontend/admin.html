@@ -78,6 +78,7 @@
             <div class="admin-card-actions">
               <span id="msg-count" class="admin-count">Loading...</span>
               <button id="refresh-messages-btn" type="button" class="btn-secondary-sm">Refresh</button>
+              <button id="export-messages-btn" type="button" class="btn-secondary-sm">Export CSV</button>
               <button id="mark-all-read-btn" type="button" class="btn-secondary-sm">Mark All Read</button>
             </div>
           </div>
@@ -91,11 +92,16 @@
           <div id="messages-container">
             <div class="empty-state">Loading messages...</div>
           </div>
+          <div class="admin-pagination">
+            <button id="msg-prev" type="button" class="btn-secondary-sm">← Prev</button>
+            <span id="msg-page-label">Page 1</span>
+            <button id="msg-next" type="button" class="btn-secondary-sm">Next →</button>
+          </div>
         </div>
       </div>
 
-    <!-- ===== TAB: PROJECTS ===== -->
-    <div id="tab-projects" class="tab-content" role="tabpanel">
+      <!-- ===== TAB: PROJECTS ===== -->
+      <div id="tab-projects" class="tab-content" role="tabpanel">
 
         <!-- Projects List -->
         <div class="admin-card">
@@ -104,17 +110,23 @@
             <div class="admin-card-actions">
               <span id="proj-count" class="admin-count">Loading...</span>
               <button id="refresh-projects-btn" type="button" class="btn-secondary-sm">Refresh</button>
+              <button id="export-projects-btn" type="button" class="btn-secondary-sm">Export CSV</button>
               <button id="clear-cache-btn" type="button" class="btn-secondary-sm">Clear Cache</button>
             </div>
           </div>
           <div id="projects-container">
             <div class="empty-state">Loading projects...</div>
           </div>
+          <div class="admin-pagination">
+            <button id="proj-prev" type="button" class="btn-secondary-sm">← Prev</button>
+            <span id="proj-page-label">Page 1</span>
+            <button id="proj-next" type="button" class="btn-secondary-sm">Next →</button>
+          </div>
         </div>
 
-      <!-- Project Form -->
-      <div class="admin-card" id="project-form-card">
-        <div class="admin-card-header">
+        <!-- Project Form -->
+        <div class="admin-card" id="project-form-card">
+          <div class="admin-card-header">
           <h3 id="proj-form-title-heading">Add New Project</h3>
         </div>
         <form id="project-form" novalidate>

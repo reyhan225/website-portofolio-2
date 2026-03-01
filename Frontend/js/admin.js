@@ -12,6 +12,12 @@ let allMessages = [];
 let allAdminProjects = [];
 let messageSearch = '';
 let messageUnreadOnly = false;
+let messagePage = 1;
+let messageTotalPages = 1;
+const messagePageSize = 20;
+let projectPage = 1;
+let projectTotalPages = 1;
+const projectPageSize = 10;
 
 // ===== THEME =====
 const savedTheme = localStorage.getItem('theme') || 'dark';
@@ -162,7 +168,12 @@ async function loadAdminData() {
 // ===== MESSAGES =====
 async function loadMessages() {
   try {
-    const res = await fetch(`${API_BASE}/contact`, { headers: authHeaders() });
+    const params = new URLSearchParams({
+      page: String(messagePage),
+      limit: String(messagePageSize),
+      unread: messageUnreadOnly ? 'true' : 'false'
+    });
+    const res = await fetch(`${API_BASE}/contact?${params.toString()}`, { headers: authHeaders() });
 
     if (res.status === 401 || res.status === 403) {
       handleUnauthorized();
@@ -174,6 +185,12 @@ async function loadMessages() {
     const json = await parseJsonSafe(res);
     // Backend returns { success, data, pagination, fromCache }
     allMessages = json.data && Array.isArray(json.data) ? json.data : [];
+    if (json.pagination) {
+      messageTotalPages = Math.max(1, json.pagination.totalPages || 1);
+      messagePage = Math.min(messagePage, messageTotalPages);
+    } else {
+      messageTotalPages = 1;
+    }
     renderMessages();
   } catch {
     const container = document.getElementById('messages-container');
@@ -193,6 +210,12 @@ function renderMessages() {
     markAllBtn.disabled = unread === 0;
     markAllBtn.textContent = unread === 0 ? 'All Read' : `Mark All Read (${unread})`;
   }
+  const pageLabel = document.getElementById('msg-page-label');
+  if (pageLabel) pageLabel.textContent = `Page ${messagePage} / ${messageTotalPages}`;
+  const prevBtn = document.getElementById('msg-prev');
+  const nextBtn = document.getElementById('msg-next');
+  if (prevBtn) prevBtn.disabled = messagePage <= 1;
+  if (nextBtn) nextBtn.disabled = messagePage >= messageTotalPages;
 
   let filtered = allMessages;
   const q = messageSearch.trim().toLowerCase();
@@ -339,12 +362,22 @@ function refreshMessages() {
 // ===== PROJECTS =====
 async function loadAdminProjects() {
   try {
-    const res = await fetch(`${API_BASE}/projects`);
+    const params = new URLSearchParams({
+      page: String(projectPage),
+      limit: String(projectPageSize)
+    });
+    const res = await fetch(`${API_BASE}/projects?${params.toString()}`);
     if (!res.ok) throw new Error('Error');
 
     const json = await parseJsonSafe(res);
     // Backend returns { success, data, pagination, fromCache }
     allAdminProjects = json.data && Array.isArray(json.data) ? json.data : [];
+    if (json.pagination) {
+      projectTotalPages = Math.max(1, json.pagination.totalPages || 1);
+      projectPage = Math.min(projectPage, projectTotalPages);
+    } else {
+      projectTotalPages = 1;
+    }
 
     renderAdminProjects();
   } catch {
@@ -364,6 +397,12 @@ function renderAdminProjects() {
 
   const projCount = document.getElementById('proj-count');
   if (projCount) projCount.textContent = `${allAdminProjects.length} projects`;
+  const pageLabel = document.getElementById('proj-page-label');
+  if (pageLabel) pageLabel.textContent = `Page ${projectPage} / ${projectTotalPages}`;
+  const prevBtn = document.getElementById('proj-prev');
+  const nextBtn = document.getElementById('proj-next');
+  if (prevBtn) prevBtn.disabled = projectPage <= 1;
+  if (nextBtn) nextBtn.disabled = projectPage >= projectTotalPages;
 
   container.innerHTML = `
     <table class="admin-table">
@@ -532,6 +571,78 @@ async function clearCache() {
   }
 }
 
+function goToMessagePage(delta) {
+  const next = messagePage + delta;
+  if (next < 1 || next > messageTotalPages) return;
+  messagePage = next;
+  loadMessages();
+}
+
+function goToProjectPage(delta) {
+  const next = projectPage + delta;
+  if (next < 1 || next > projectTotalPages) return;
+  projectPage = next;
+  loadAdminProjects();
+}
+
+function exportCsv(rows, filename) {
+  if (!rows || !rows.length) {
+    showBanner('error', 'Nothing to export.');
+    return;
+  }
+  const header = Object.keys(rows[0]);
+  const lines = [
+    header.join(','),
+    ...rows.map(r => header.map(h => {
+      const val = r[h] ?? '';
+      const escaped = String(val).replace(/"/g, '""');
+      return `"${escaped}"`;
+    }).join(','))
+  ];
+  const blob = new Blob([lines.join('\n')], { type: 'text/csv;charset=utf-8;' });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = filename;
+  document.body.appendChild(a);
+  a.click();
+  document.body.removeChild(a);
+  URL.revokeObjectURL(url);
+}
+
+function exportMessagesCsv() {
+  if (!allMessages.length) {
+    showBanner('error', 'No messages to export.');
+    return;
+  }
+  const rows = allMessages.map(m => ({
+    name: m.name,
+    email: m.email,
+    subject: m.subject,
+    message: m.message,
+    timestamp: m.timestamp || m.createdAt,
+    read: m.read ? 'yes' : 'no'
+  }));
+  exportCsv(rows, 'messages.csv');
+}
+
+function exportProjectsCsv() {
+  if (!allAdminProjects.length) {
+    showBanner('error', 'No projects to export.');
+    return;
+  }
+  const rows = allAdminProjects.map(p => ({
+    title: p.title,
+    category: p.category,
+    role: p.role,
+    tech: (p.tech || []).join('; '),
+    impact: p.impact || '',
+    github: p.github || '',
+    demo: p.demo || ''
+  }));
+  exportCsv(rows, 'projects.csv');
+}
+
 // ===== UTILS =====
 function showBanner(type, msg) {
   const banner = document.getElementById('admin-alert');
@@ -570,6 +681,8 @@ document.addEventListener('DOMContentLoaded', async () => {
   document.getElementById('refresh-messages-btn')?.addEventListener('click', refreshMessages);
   document.getElementById('refresh-projects-btn')?.addEventListener('click', refreshProjects);
   document.getElementById('clear-cache-btn')?.addEventListener('click', clearCache);
+  document.getElementById('export-messages-btn')?.addEventListener('click', exportMessagesCsv);
+  document.getElementById('export-projects-btn')?.addEventListener('click', exportProjectsCsv);
 
   document.getElementById('msg-search')?.addEventListener('input', e => {
     messageSearch = e.target.value || '';
@@ -577,8 +690,14 @@ document.addEventListener('DOMContentLoaded', async () => {
   });
   document.getElementById('msg-unread-only')?.addEventListener('change', e => {
     messageUnreadOnly = !!e.target.checked;
+    messagePage = 1;
     renderMessages();
+    loadMessages();
   });
+  document.getElementById('msg-prev')?.addEventListener('click', () => goToMessagePage(-1));
+  document.getElementById('msg-next')?.addEventListener('click', () => goToMessagePage(1));
+  document.getElementById('proj-prev')?.addEventListener('click', () => goToProjectPage(-1));
+  document.getElementById('proj-next')?.addEventListener('click', () => goToProjectPage(1));
 
   if (authToken) {
     showAdminView();

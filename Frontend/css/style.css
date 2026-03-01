@@ -1497,6 +1497,21 @@ textarea {
   font-size: 0.92rem;
 }
 
+.admin-pagination {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: var(--space-sm);
+  padding: var(--space-sm);
+  margin-top: var(--space-sm);
+  border-top: 1px solid var(--border);
+}
+
+.admin-pagination span {
+  color: var(--text2);
+  font-size: 0.95rem;
+}
+
 #admin-access {
   background: linear-gradient(180deg, var(--bg) 0%, color-mix(in oklab, var(--bg2) 70%, var(--bg) 30%) 100%);
   padding-block: var(--space-2xl) var(--space-3xl);
