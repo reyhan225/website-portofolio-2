@@ -48,25 +48,51 @@ function buildAllowedOrigins() {
     'http://localhost:3000',
     'http://127.0.0.1:3000',
     'http://localhost:5500',
-    'http://127.0.0.1:5500'
+    'http://127.0.0.1:5500',
+    `https://${NEW_DOMAIN}`,
+    `https://${OLD_DOMAIN}`,
+    `https://${ADMIN_DOMAIN}`
   ];
   const extras = (process.env.CORS_ORIGINS || '')
     .split(',')
     .map(v => v.trim())
     .filter(Boolean);
-  return new Set([...defaults, ...extras]);
+
+  const normalized = [...defaults, ...extras]
+    .map(normalizeOrigin)
+    .filter(Boolean);
+
+  return new Set(normalized);
 }
 
 function getRequestHost(req) {
   const host = req.get('x-forwarded-host') || req.get('host') || '';
-  return String(host).trim().toLowerCase();
+  return normalizeHost(host);
+}
+
+function normalizeHost(value) {
+  return String(value || '')
+    .split(',')[0]
+    .trim()
+    .toLowerCase();
+}
+
+function normalizeOrigin(value) {
+  if (!value) return null;
+  try {
+    const parsed = new URL(value);
+    if (parsed.protocol !== 'http:' && parsed.protocol !== 'https:') return null;
+    return `${parsed.protocol}//${parsed.host}`;
+  } catch {
+    return null;
+  }
 }
 
 function isSameOriginRequest(req, origin) {
   if (!origin) return true;
   try {
     const parsed = new URL(origin);
-    return parsed.host.toLowerCase() === getRequestHost(req);
+    return normalizeHost(parsed.host) === getRequestHost(req);
   } catch {
     return false;
   }
@@ -115,7 +141,8 @@ function createApp() {
 
   app.use((req, res, next) => {
     const origin = req.get('origin');
-    const isAllowed = !origin || allowedOrigins.has(origin) || isSameOriginRequest(req, origin);
+    const normalizedOrigin = normalizeOrigin(origin);
+    const isAllowed = !origin || (normalizedOrigin && allowedOrigins.has(normalizedOrigin)) || isSameOriginRequest(req, origin);
     const options = {
       origin: isAllowed,
       methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH'],
