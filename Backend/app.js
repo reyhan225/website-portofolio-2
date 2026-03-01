@@ -98,6 +98,29 @@ function isSameOriginRequest(req, origin) {
   }
 }
 
+function isAllowedVercelDeployment(origin) {
+  const allowedPrefixes = [
+    'website-portofolio-2',
+    'admin-reyhan-muhamad-rizki',
+    'reyhan-muhamad-rizki'
+  ];
+  try {
+    const host = new URL(origin).host.toLowerCase();
+    if (!host.endsWith('.vercel.app')) return false;
+    return allowedPrefixes.some(prefix => host === `${prefix}.vercel.app` || host.startsWith(`${prefix}-`));
+  } catch {
+    return false;
+  }
+}
+
+function isAllowedOrigin({ origin, normalizedOrigin, req, allowedOrigins }) {
+  if (!origin) return true;
+  if (normalizedOrigin && allowedOrigins.has(normalizedOrigin)) return true;
+  if (isSameOriginRequest(req, origin)) return true;
+  if (isAllowedVercelDeployment(origin)) return true;
+  return false;
+}
+
 function createApp() {
   assertProductionEnv();
   const app = express();
@@ -142,7 +165,7 @@ function createApp() {
   app.use((req, res, next) => {
     const origin = req.get('origin');
     const normalizedOrigin = normalizeOrigin(origin);
-    const isAllowed = !origin || (normalizedOrigin && allowedOrigins.has(normalizedOrigin)) || isSameOriginRequest(req, origin);
+    const isAllowed = isAllowedOrigin({ origin, normalizedOrigin, req, allowedOrigins });
     const options = {
       origin: isAllowed,
       methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH'],
