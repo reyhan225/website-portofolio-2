@@ -64,6 +64,11 @@
       <p class="hero-greeting" id="greeting-text" aria-live="polite">Good morning! Welcome to my portfolio.</p>
       <h1 class="hero-name">Lumban Tobing<br><span class="highlight">Reyhan M. Rizki</span></h1>
       <p class="hero-title" data-i18n="hero_subtitle">Security Analyst &amp; Full Stack Developer</p>
+      <div class="availability-bar">
+        <span class="status-dot"></span>
+        <span id="availability-text" data-i18n="availability_status">Open for freelance, security reviews, and internships</span>
+        <a class="availability-cta" href="#contact" data-i18n="availability_cta">Book a call →</a>
+      </div>
       <p class="hero-tagline" aria-live="polite">
         <span id="typed-text"></span><span class="cursor" aria-hidden="true"></span>
       </p>
@@ -182,51 +187,48 @@
   </div>
 </section>
 
-<!-- ===== CASE STUDY ===== -->
+<!-- ===== CASE STUDIES (Carousel) ===== -->
 <section id="casestudy">
   <div class="container">
     <div class="section-header">
-      <div class="section-tag" data-i18n="security_tag">Case Study</div>
+      <div class="section-tag" data-i18n="security_tag">Case Studies</div>
       <h2 class="section-title" data-i18n="security_title">Security Research</h2>
     </div>
-    <div class="case-study-card">
-      <div class="case-meta">
-        <span class="case-tag">🔴 CRITICAL VULNERABILITY</span>
-        <div class="severity-badge severity-critical">⚠ CVSS Score: 9.1 — Critical</div>
-      </div>
-      <h3 class="case-title">CVE-2023-XXXX: SQL Injection via Unsanitized Search Parameter in University Portal</h3>
-      <p class="case-summary">
-        During a penetration test of an internal university portal application, I identified a critical SQL injection vulnerability in the student search endpoint. The application passed user-supplied input directly into a dynamic SQL query without any parameterization or sanitization — exposing the entire student database to extraction.
-      </p>
-      <div class="case-grid">
-        <div class="case-block">
-          <h4 class="case-block-title vuln">🔓 Vulnerability Analysis</h4>
-          <p><strong>Type:</strong> SQL Injection (Error-Based &amp; UNION-Based)</p>
-          <p><strong>Vector:</strong> The <code>/search?q=</code> parameter was concatenated directly into a raw SQL query. No input validation, no prepared statements, no WAF.</p>
-          <p><strong>Vulnerable code pattern:</strong></p>
-          <div class="code-snippet">// VULNERABLE (never do this)
-$q = $_GET['q'];
-$sql = "SELECT * FROM students
-  WHERE name = '$q'";
-// Attacker input: ' OR '1'='1
-// Result: full table dump</div>
-          <p><strong>Impact:</strong> Attacker could extract all student names, NIM numbers, emails, grades, and admin credentials using UNION-based injection. Boolean-blind techniques also confirmed feasibility without error output.</p>
+    <div class="case-carousel">
+      <button class="carousel-btn" id="case-prev" aria-label="Previous case" data-i18n="case_prev">Prev</button>
+      <div class="case-study-card" id="case-card">
+        <div class="case-meta">
+          <span class="case-tag" id="case-badge">🔴</span>
+          <div class="severity-badge" id="case-severity">Critical</div>
         </div>
-        <div class="case-block">
-          <h4 class="case-block-title mitigation">✅ Mitigation Strategy</h4>
-          <p><strong>1. Parameterized Queries (Primary Fix):</strong> Replace all dynamic SQL with PDO prepared statements or an ORM layer.</p>
-          <div class="code-snippet">// SECURE - Prepared Statement
-$stmt = $pdo->prepare(
-  "SELECT * FROM students
-   WHERE name = ?"
-);
-$stmt->execute([$_GET['q']]);</div>
-          <p><strong>2. Input Validation:</strong> Whitelist allowed characters for search fields (alphanumeric + space only).</p>
-          <p><strong>3. Least Privilege:</strong> Database user account should only have SELECT permission on necessary tables — not INSERT/DROP/UPDATE.</p>
-          <p><strong>4. Error Handling:</strong> Suppress database error messages from end users. Log internally only.</p>
-          <p><strong>5. WAF Layer:</strong> Deploy ModSecurity with OWASP Core Rule Set as a defense-in-depth measure.</p>
+        <h3 class="case-title" id="case-title">Loading…</h3>
+        <p class="case-summary" id="case-summary">Loading case studies…</p>
+        <div class="case-grid">
+          <div class="case-block">
+            <h4 class="case-block-title vuln" id="case-vector-title">Vector</h4>
+            <p id="case-vector"></p>
+          </div>
+          <div class="case-block">
+            <h4 class="case-block-title mitigation" id="case-mitigation-title">Mitigation</h4>
+            <p id="case-mitigation"></p>
+          </div>
         </div>
+        <div class="case-tags" id="case-tags"></div>
       </div>
+      <button class="carousel-btn" id="case-next" aria-label="Next case" data-i18n="case_next">Next</button>
+    </div>
+  </div>
+</section>
+
+<!-- ===== TESTIMONIALS ===== -->
+<section id="testimonials">
+  <div class="container">
+    <div class="section-header">
+      <div class="section-tag" data-i18n="testimonials_tag">Testimonials</div>
+      <h2 class="section-title" data-i18n="testimonials_title">What collaborators say</h2>
+    </div>
+    <div class="testimonial-grid" id="testimonial-grid">
+      <!-- Rendered by JS -->
     </div>
   </div>
 </section>

@@ -55,6 +55,12 @@ const translations = {
     projects_error: 'Failed to load projects. Make sure the backend is running.',
     projects_empty: 'No projects found.',
     projects_empty_search: 'No projects match your search.',
+    availability_status: 'Open for freelance, security reviews, and internships',
+    availability_cta: 'Book a call →',
+    testimonials_tag: 'Testimonials',
+    testimonials_title: 'What collaborators say',
+    case_prev: 'Prev',
+    case_next: 'Next',
     security_tag: 'Case Study',
     security_title: 'Security Research',
     contact_tag: 'Contact',
@@ -131,6 +137,12 @@ const translations = {
     projects_error: 'Gagal memuat proyek. Pastikan backend berjalan.',
     projects_empty: 'Proyek tidak ditemukan.',
     projects_empty_search: 'Tidak ada proyek yang cocok dengan pencarian.',
+    availability_status: 'Tersedia untuk freelance, security review, dan magang',
+    availability_cta: 'Jadwalkan panggilan →',
+    testimonials_tag: 'Testimoni',
+    testimonials_title: 'Kata mereka',
+    case_prev: 'Sebelumnya',
+    case_next: 'Berikutnya',
     security_tag: 'Studi Kasus',
     security_title: 'Riset Keamanan',
     contact_tag: 'Kontak',
@@ -371,6 +383,96 @@ function renderSkills() {
     </div>
   `).join('');
   setTimeout(initScrollAnimation, 0);
+}
+
+// ===== CASE STUDIES =====
+const caseStudies = [
+  {
+    badge: '🔴 Critical',
+    severity: 'CVSS 9.1 — Critical',
+    title: 'CVE-2023-XXXX: SQL Injection in University Portal',
+    summary: 'Extracted full student DB due to raw concatenated queries; implemented parameterized statements and WAF.',
+    vector: 'Error/UNION-based SQLi via search parameter without validation.',
+    mitigation: 'Prepared statements + strict input whitelist + least-privilege DB user + WAF rules.',
+    tags: ['SQLi', 'Higher-Ed', 'AppSec', 'WAF']
+  },
+  {
+    badge: '🟠 High',
+    severity: 'CVSS 8.2 — High',
+    title: 'SSRF to Metadata Escalation in Cloud API Gateway',
+    summary: 'Discovered SSRF in PDF import endpoint; could read instance metadata and temporary creds.',
+    vector: 'Unsanitized URL fetch allowed internal HTTP access to metadata endpoint.',
+    mitigation: 'URL allowlist, SSRF regex guard, metadata IP block, outbound proxy with egress policy.',
+    tags: ['SSRF', 'Cloud', 'API Security', 'Defense-in-depth']
+  },
+  {
+    badge: '🟢 Medium',
+    severity: 'CVSS 6.5 — Medium',
+    title: 'IDOR in Internship Portal',
+    summary: 'Student grades could be read by changing IDs; no authz check on resource owner.',
+    vector: 'Predictable ID parameter with missing authorization check.',
+    mitigation: 'Enforce per-user ACL, move to UUIDs, add audit logging, regression test.',
+    tags: ['IDOR', 'Authorization', 'UUID', 'Audit']
+  }
+];
+let caseIndex = 0;
+
+function setText(id, text) {
+  const el = document.getElementById(id);
+  if (el) el.textContent = text;
+}
+
+function renderCaseStudy() {
+  const current = caseStudies[caseIndex];
+  if (!current) return;
+  setText('case-badge', current.badge);
+  setText('case-severity', current.severity);
+  setText('case-title', current.title);
+  setText('case-summary', current.summary);
+  setText('case-vector', current.vector);
+  setText('case-mitigation', current.mitigation);
+  const tagsEl = document.getElementById('case-tags');
+  if (tagsEl) {
+    tagsEl.innerHTML = (current.tags || []).map(t => `<span class="tech-tag">${escapeHtml(t)}</span>`).join('');
+  }
+}
+
+function nextCase(delta) {
+  caseIndex = (caseIndex + delta + caseStudies.length) % caseStudies.length;
+  renderCaseStudy();
+}
+
+// ===== TESTIMONIALS =====
+const testimonials = [
+  {
+    quote: 'Reyhan paired strong security instincts with pragmatic delivery. We shipped faster and safer.',
+    name: 'Dimas Putra',
+    role: 'CTO, EduTech Startup'
+  },
+  {
+    quote: 'Clear comms, solid code reviews, and caught an auth bug before launch.',
+    name: 'Annisa Rahma',
+    role: 'Product Manager, SaaS'
+  },
+  {
+    quote: 'His penetration test found a critical SSRF we missed. Mitigation plan was actionable.',
+    name: 'Ravi Narayan',
+    role: 'Lead DevOps Engineer'
+  }
+];
+
+function renderTestimonials() {
+  const grid = document.getElementById('testimonial-grid');
+  if (!grid) return;
+  grid.innerHTML = testimonials.map(t => `
+    <div class="testimonial-card">
+      <p class="testimonial-quote">“${escapeHtml(t.quote)}”</p>
+      <div class="testimonial-meta">
+        <div class="testimonial-name">${escapeHtml(t.name)}</div>
+        <div class="testimonial-role">${escapeHtml(t.role)}</div>
+      </div>
+    </div>
+  `).join('');
 }
 
 // ===== PROJECTS =====
@@ -790,6 +892,12 @@ document.addEventListener('DOMContentLoaded', () => {
 
   // Skills
   renderSkills();
+
+  // Case studies & testimonials
+  renderCaseStudy();
+  renderTestimonials();
+  document.getElementById('case-prev')?.addEventListener('click', () => nextCase(-1));
+  document.getElementById('case-next')?.addEventListener('click', () => nextCase(1));
 
   // Projects
   loadProjects();
