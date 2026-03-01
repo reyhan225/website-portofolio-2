@@ -135,6 +135,12 @@ async function getProjects({ page = 1, limit = 10, category = null } = {}) {
     const countSnapshot = await query.count().get();
     const total = countSnapshot.data().count;
 
+    // If Firestore has no projects, fall back to local JSON seed data
+    if (total === 0) {
+      console.warn('No projects found in Firestore; serving local projects.json seed');
+      return getProjectsFromFile({ page, limit, category });
+    }
+
     // Apply pagination
     const offset = (page - 1) * limit;
     query = query.limit(limit).offset(offset);
