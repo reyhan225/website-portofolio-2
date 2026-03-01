@@ -274,6 +274,11 @@ function typeWriter() {
   const el = document.getElementById('typed-text');
   if (!el) return;
 
+  if (!Array.isArray(taglines) || taglines.length === 0) {
+    el.textContent = '';
+    return;
+  }
+
   if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
     el.textContent = taglines[0];
     return;
@@ -298,6 +303,17 @@ function typeWriter() {
 
   charIndex = isDeleting ? charIndex - 1 : charIndex + 1;
   typingTimeout = setTimeout(typeWriter, isDeleting ? 40 : 80);
+}
+
+function startTypewriter() {
+  if (typingTimeout) {
+    clearTimeout(typingTimeout);
+    typingTimeout = null;
+  }
+  typingIndex = 0;
+  charIndex = 0;
+  isDeleting = false;
+  typeWriter();
 }
 
 // ===== SKILLS DATA =====
@@ -737,11 +753,7 @@ document.addEventListener('DOMContentLoaded', () => {
     applyTranslations();
     document.getElementById('greeting-text').textContent = getGreeting();
     renderSkills();
-    if (typingTimeout) clearTimeout(typingTimeout);
-    charIndex = 0;
-    typingIndex = 0;
-    isDeleting = false;
-    typeWriter();
+    startTypewriter();
     if (hasLoadedProjects) {
       renderProjects();
     } else {
@@ -758,7 +770,7 @@ document.addEventListener('DOMContentLoaded', () => {
   document.getElementById('greeting-text').textContent = getGreeting();
 
   // Typing
-  typeWriter();
+  startTypewriter();
 
   // Skills
   renderSkills();
