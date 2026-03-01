@@ -78,7 +78,11 @@ const translations = {
     form_placeholder_email: 'john@example.com',
     form_placeholder_subject: 'Project Collaboration / Internship / Other',
     form_placeholder_message: 'Tell me about your project or opportunity...',
-    footer_text: 'Designed & Built with security in mind by'
+    footer_text: 'Designed & Built with security in mind by',
+    skill_frontend: 'Frontend Development',
+    skill_backend: 'Backend Development',
+    skill_security: 'Cyber Security',
+    skill_tools: 'Tools & DevOps'
   },
   id: {
     nav_about: 'Tentang',
@@ -150,7 +154,11 @@ const translations = {
     form_placeholder_email: 'nama@email.com',
     form_placeholder_subject: 'Kolaborasi Proyek / Magang / Lainnya',
     form_placeholder_message: 'Ceritakan proyek atau peluang yang ingin Anda diskusikan...',
-    footer_text: 'Dirancang & Dibangun dengan keamanan sebagai prioritas oleh'
+    footer_text: 'Dirancang & Dibangun dengan keamanan sebagai prioritas oleh',
+    skill_frontend: 'Pengembangan Frontend',
+    skill_backend: 'Pengembangan Backend',
+    skill_security: 'Keamanan Siber',
+    skill_tools: 'Tools & DevOps'
   }
 };
 
@@ -158,6 +166,69 @@ let currentLang = localStorage.getItem('lang') || 'en';
 
 function t(key) {
   return translations[currentLang][key] || key;
+}
+
+// ===== UTILITY FUNCTIONS =====
+// Escape HTML to prevent XSS attacks
+function escapeHtml(str) {
+  if (typeof str !== 'string') return '';
+  const div = document.createElement('div');
+  div.textContent = str;
+  return div.innerHTML;
+}
+
+// Safe URL validation - only allow http/https protocols
+function safeUrl(url) {
+  if (!url || typeof url !== 'string') return null;
+  try {
+    const parsed = new URL(url);
+    if (parsed.protocol === 'http:' || parsed.protocol === 'https:') {
+      return url;
+    }
+    return null;
+  } catch {
+    // If URL parsing fails, treat as relative URL
+    if (url.startsWith('/') || url.startsWith('./') || url.startsWith('../')) {
+      return url;
+    }
+    return null;
+  }
+}
+
+// Scroll animation observer
+function initScrollAnimation() {
+  if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
+    document.querySelectorAll('.skill-category, .project-card, .detail-card, .case-block, .fade-in').forEach(el => {
+      el.classList.add('visible');
+    });
+    return;
+  }
+
+  const observer = new IntersectionObserver((entries) => {
+    entries.forEach(entry => {
+      if (entry.isIntersecting) {
+        entry.target.classList.add('visible');
+      }
+    });
+  }, { threshold: 0.1 });
+
+  document.querySelectorAll('.skill-category, .project-card, .detail-card, .case-block, .fade-in').forEach(el => {
+    el.classList.add('fade-in');
+    observer.observe(el);
+  });
+}
+
+// Show form alert messages
+function showFormAlert(alertEl, message, type = 'error') {
+  if (!alertEl) return;
+  alertEl.textContent = message;
+  alertEl.className = 'form-alert ' + type;
+  alertEl.style.display = 'block';
+  
+  // Auto-hide after 5 seconds
+  setTimeout(() => {
+    alertEl.style.display = 'none';
+  }, 5000);
 }
 
 function applyTranslations() {
@@ -420,3 +491,294 @@ async function handleContactSubmit(e) {
     showFormAlert(alert, t('form_error_email'), 'error');
     return;
   }
+
+  // Add loading state with spinner
+  btn.disabled = true;
+  btn.classList.add('btn-loading');
+  btn.textContent = '';
+
+  try {
+    const res = await fetch(`${API_BASE}/contact`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ name, email, subject, message, website })
+    });
+
+    const data = await res.json();
+
+    if (res.ok) {
+      showFormAlert(alert, t('form_success'), 'success');
+      form.reset();
+    } else {
+      showFormAlert(alert, data.error || 'Something went wrong.', 'error');
+    }
+  } catch {
+    showFormAlert(alert, t('form_network_error'), 'error');
+  } finally {
+    btn.disabled = false;
+    btn.classList.remove('btn-loading');
+    btn.setAttribute('data-i18n', 'form_send');
+    btn.textContent = t('form_send');
+  }
+}
+
+// ===== TERMINAL =====
+const terminalCommands = {
+  help: () => [
+    { cls: 'term-info', text: 'Available commands:' },
+    { cls: 'term-output', text: '  whoami   - About Reyhan' },
+    { cls: 'term-output', text: '  skills   - Technical skill set' },
+    { cls: 'term-output', text: '  projects - Recent projects' },
+    { cls: 'term-output', text: '  contact  - Contact information' },
+    { cls: 'term-output', text: '  clear    - Clear terminal' },
+    { cls: 'term-output', text: '  help     - Show this menu' }
+  ],
+  whoami: () => [
+    { cls: 'term-success', text: 'Lumban Tobing Reyhan Muhamad Rizki' },
+    { cls: 'term-output', text: 'Role  : Security Analyst & Full Stack Developer' },
+    { cls: 'term-output', text: 'Edu   : Bina Nusantara University' },
+    { cls: 'term-output', text: 'Focus : Cyber Security, Web Development' },
+    { cls: 'term-output', text: 'GitHub: github.com/reyhan225' },
+    { cls: 'term-output', text: `Email : ${adminEmail}` }
+  ],
+  skills: () => [
+    { cls: 'term-info', text: '[ Technical Skills ]' },
+    { cls: 'term-output', text: 'Frontend : HTML5, CSS3, JavaScript, React, Vue' },
+    { cls: 'term-output', text: 'Backend  : Node.js, Express, Python, Flask, Laravel' },
+    { cls: 'term-output', text: 'Security : OWASP, Burp Suite, Nmap, Metasploit' },
+    { cls: 'term-output', text: 'Database : MySQL, PostgreSQL, MongoDB' },
+    { cls: 'term-output', text: 'DevOps   : Docker, Linux, Git, Nginx' }
+  ],
+  projects: () => {
+    const lines = [{ cls: 'term-info', text: '[ Projects ]' }];
+    if (allProjects.length) {
+      allProjects.forEach((p, i) => {
+        lines.push({ cls: 'term-success', text: `${i + 1}. ${p.title}` });
+        lines.push({ cls: 'term-output', text: `   ${p.category} - ${(p.tech || []).slice(0, 3).join(', ')}` });
+      });
+    } else {
+      lines.push({ cls: 'term-output', text: 'Loading projects...' });
+    }
+    return lines;
+  },
+  contact: () => [
+    { cls: 'term-info', text: '[ Contact Information ]' },
+    { cls: 'term-output', text: `Email  : ${adminEmail}` },
+    { cls: 'term-output', text: 'GitHub : github.com/reyhan225' },
+    { cls: 'term-output', text: 'Status : Open to opportunities' }
+  ],
+  clear: null
+};
+
+let terminalHistory = [];
+
+function initTerminal() {
+  const toggle = document.getElementById('terminal-toggle');
+  const window_ = document.getElementById('terminal-window');
+  const input = document.getElementById('terminal-input');
+  const body = document.getElementById('terminal-body');
+
+  if (!toggle || !window_ || !input || !body) return;
+
+  toggle.addEventListener('click', () => {
+    window_.classList.toggle('open');
+    toggle.setAttribute('aria-expanded', window_.classList.contains('open') ? 'true' : 'false');
+    if (window_.classList.contains('open')) {
+      if (terminalHistory.length === 0) {
+        printToTerminal([{ cls: 'term-info', text: "Reyhan's Terminal v1.0" }]);
+        printToTerminal([{ cls: 'term-output', text: 'Type "help" to see available commands.' }]);
+      }
+      setTimeout(() => input.focus(), 100);
+    }
+  });
+
+  let historyIdx = -1;
+  const inputHistory = [];
+
+  input.addEventListener('keydown', e => {
+    if (e.key === 'Enter') {
+      const cmd = input.value.trim().toLowerCase();
+      if (!cmd) return;
+
+      inputHistory.unshift(cmd);
+      historyIdx = -1;
+
+      printToTerminal([{ cls: 'term-prompt', text: `reyhan@portfolio:~$ ${cmd}` }]);
+
+      if (cmd === 'clear') {
+        body.innerHTML = '';
+        input.value = '';
+        return;
+      }
+
+      if (terminalCommands[cmd]) {
+        const output = terminalCommands[cmd]();
+        printToTerminal(output);
+      } else {
+        printToTerminal([{ cls: 'term-error', text: `Command not found: "${cmd}". Type "help".` }]);
+      }
+
+      input.value = '';
+    } else if (e.key === 'ArrowUp') {
+      historyIdx = Math.min(historyIdx + 1, inputHistory.length - 1);
+      input.value = inputHistory[historyIdx] || '';
+      e.preventDefault();
+    } else if (e.key === 'ArrowDown') {
+      historyIdx = Math.max(historyIdx - 1, -1);
+      input.value = historyIdx >= 0 ? inputHistory[historyIdx] : '';
+      e.preventDefault();
+    }
+  });
+
+  document.addEventListener('keydown', e => {
+    if (e.key === 'Escape' && window_.classList.contains('open')) {
+      window_.classList.remove('open');
+      toggle.setAttribute('aria-expanded', 'false');
+      toggle.focus();
+    }
+  });
+}
+
+function printToTerminal(lines) {
+  const body = document.getElementById('terminal-body');
+  if (!body) return;
+  lines.forEach(line => {
+    const div = document.createElement('div');
+    div.className = `term-line ${line.cls}`;
+    div.textContent = line.text;
+    body.appendChild(div);
+  });
+  body.scrollTop = body.scrollHeight;
+  terminalHistory.push(...lines);
+}
+
+function applyAdminEmailToUI(email) {
+  const safeEmail = typeof email === 'string' && email.includes('@') ? email.trim() : DEFAULT_ADMIN_EMAIL;
+  adminEmail = safeEmail;
+
+  const emailLink = document.getElementById('contact-admin-email-link');
+  const emailText = document.getElementById('contact-admin-email-text');
+  if (emailLink) emailLink.href = `mailto:${safeEmail}`;
+  if (emailText) emailText.textContent = safeEmail;
+}
+
+async function loadSiteMeta() {
+  try {
+    const res = await fetch(`${API_BASE}/meta`);
+    if (!res.ok) return;
+    const data = await res.json();
+    if (data && data.adminEmail) {
+      applyAdminEmailToUI(data.adminEmail);
+    }
+  } catch {
+    // Keep defaults when metadata endpoint is unavailable.
+  }
+}
+
+// ===== SMOOTH SCROLL =====
+function initSmoothScroll() {
+  document.querySelectorAll('a[href^="#"]').forEach(a => {
+    a.addEventListener('click', e => {
+      e.preventDefault();
+      const target = document.querySelector(a.getAttribute('href'));
+      if (target) {
+        target.scrollIntoView({ behavior: 'smooth', block: 'start' });
+        const navLinks = document.getElementById('nav-links');
+        if (navLinks) navLinks.classList.remove('open');
+        document.getElementById('hamburger')?.setAttribute('aria-expanded', 'false');
+      }
+    });
+  });
+}
+
+// ===== MOBILE NAV =====
+function initMobileNav() {
+  const hamburger = document.getElementById('hamburger');
+  const navLinks = document.getElementById('nav-links');
+  if (!hamburger || !navLinks) return;
+
+  hamburger.addEventListener('click', () => {
+    navLinks.classList.toggle('open');
+    hamburger.setAttribute('aria-expanded', navLinks.classList.contains('open') ? 'true' : 'false');
+  });
+
+  document.addEventListener('click', e => {
+    if (!navLinks.classList.contains('open')) return;
+    if (e.target === hamburger || hamburger.contains(e.target) || navLinks.contains(e.target)) return;
+    navLinks.classList.remove('open');
+    hamburger.setAttribute('aria-expanded', 'false');
+  });
+
+  document.addEventListener('keydown', e => {
+    if (e.key === 'Escape' && navLinks.classList.contains('open')) {
+      navLinks.classList.remove('open');
+      hamburger.setAttribute('aria-expanded', 'false');
+      hamburger.focus();
+    }
+  });
+}
+
+// ===== INIT =====
+document.addEventListener('DOMContentLoaded', () => {
+  applyAdminEmailToUI(DEFAULT_ADMIN_EMAIL);
+
+  // Theme
+  applyTheme(currentTheme);
+  document.getElementById('theme-toggle')?.addEventListener('click', () => {
+    applyTheme(currentTheme === 'dark' ? 'light' : 'dark');
+  });
+
+  // Language
+  document.getElementById('lang-toggle')?.addEventListener('click', () => {
+    currentLang = currentLang === 'en' ? 'id' : 'en';
+    localStorage.setItem('lang', currentLang);
+    const btn = document.getElementById('lang-toggle');
+    if (btn) btn.textContent = currentLang === 'en' ? '🇮🇩 ID' : '🇬🇧 EN';
+    applyTranslations();
+    document.getElementById('greeting-text').textContent = getGreeting();
+    renderSkills();
+    if (typingTimeout) clearTimeout(typingTimeout);
+    charIndex = 0;
+    typingIndex = 0;
+    isDeleting = false;
+    typeWriter();
+    if (hasLoadedProjects) {
+      renderProjects();
+    } else {
+      updateProjectsSummary(0, 0);
+    }
+  });
+
+  const langBtn = document.getElementById('lang-toggle');
+  if (langBtn) langBtn.textContent = currentLang === 'en' ? '🇮🇩 ID' : '🇬🇧 EN';
+
+  // Apply
+  applyTranslations();
+  updateProjectsSummary(0, 0);
+  document.getElementById('greeting-text').textContent = getGreeting();
+
+  // Typing
+  typeWriter();
+
+  // Skills
+  renderSkills();
+
+  // Projects
+  loadProjects();
+  loadSiteMeta();
+  setupProjectFilter();
+  setupProjectSearch();
+
+  // Contact
+  document.getElementById('contact-form')?.addEventListener('submit', handleContactSubmit);
+
+  // Terminal
+  initTerminal();
+
+  // Scroll
+  initSmoothScroll();
+  initMobileNav();
+
+  // Scroll animations (slight delay for DOM paint)
+  setTimeout(initScrollAnimation, 100);
+});
