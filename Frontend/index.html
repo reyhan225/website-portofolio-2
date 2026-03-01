@@ -30,6 +30,31 @@
   <link rel="icon" type="image/svg+xml" href="/icons/favicon-site.svg" />
   <link rel="manifest" href="/manifest.json" />
   <meta name="theme-color" content="#00ff88" />
+
+  <!-- JSON-LD Structured Data -->
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "Person",
+    "name": "Reyhan Muhamad Rizki",
+    "url": "https://reyhan-muhamad-rizki.vercel.app/",
+    "jobTitle": "Security Analyst & Full Stack Developer",
+    "alumniOf": {
+      "@type": "CollegeOrUniversity",
+      "name": "Bina Nusantara University"
+    },
+    "knowsAbout": ["Cyber Security", "Penetration Testing", "Full Stack Web Development", "OWASP"],
+    "sameAs": [
+      "https://github.com/reyhan225",
+      "https://linkedin.com/in/reyhan-muhamad-rizki"
+    ],
+    "address": {
+      "@type": "PostalAddress",
+      "addressLocality": "Jakarta",
+      "addressCountry": "ID"
+    }
+  }
+  </script>
 </head>
 <body>
 <a class="skip-link" href="#hero">Skip to content</a>
@@ -62,12 +87,12 @@
   <div class="container">
     <div class="hero-content">
       <p class="hero-greeting" id="greeting-text" aria-live="polite">Good morning! Welcome to my portfolio.</p>
-      <h1 class="hero-name">Lumban Tobing<br><span class="highlight">Reyhan M. Rizki</span></h1>
+      <h1 class="hero-name">Reyhan Muhamad<br><span class="highlight">Rizki</span></h1>
       <p class="hero-title" data-i18n="hero_subtitle">Security Analyst &amp; Full Stack Developer</p>
       <div class="availability-bar">
         <span class="status-dot"></span>
         <span id="availability-text" data-i18n="availability_status">Open for freelance, security reviews, and internships</span>
-        <a class="availability-cta" href="#contact" data-i18n="availability_cta">Book a call →</a>
+        <a class="availability-cta" href="#contact" data-i18n="availability_cta">Get in touch →</a>
       </div>
       <p class="hero-tagline" aria-live="polite">
         <span id="typed-text"></span><span class="cursor" aria-hidden="true"></span>
@@ -75,6 +100,7 @@
       <div class="hero-cta">
         <a href="#projects" class="btn btn-primary" data-i18n="hero_cta_work">View My Work</a>
         <a href="#contact" class="btn btn-outline" data-i18n="hero_cta_contact">Get In Touch</a>
+        <a href="#contact" class="btn btn-outline" data-i18n="hero_cta_resume">📄 Download CV</a>
       </div>
       <div class="hero-stats">
         <div class="stat-item">
@@ -153,6 +179,32 @@
       <h2 class="section-title" data-i18n="skills_title">My Technology Stack</h2>
     </div>
     <div class="skills-grid" id="skills-grid" aria-label="Skills grid">
+      <!-- Rendered by JS -->
+    </div>
+  </div>
+</section>
+
+<!-- ===== CERTIFICATIONS ===== -->
+<section id="certifications">
+  <div class="container">
+    <div class="section-header">
+      <div class="section-tag" data-i18n="certs_tag">Certifications &amp; Achievements</div>
+      <h2 class="section-title" data-i18n="certs_title">Credentials &amp; Recognition</h2>
+    </div>
+    <div class="certs-grid" id="certs-grid" aria-label="Certifications grid">
+      <!-- Rendered by JS -->
+    </div>
+  </div>
+</section>
+
+<!-- ===== EXPERIENCE / TIMELINE ===== -->
+<section id="experience">
+  <div class="container">
+    <div class="section-header">
+      <div class="section-tag" data-i18n="exp_tag">Experience</div>
+      <h2 class="section-title" data-i18n="exp_title">Journey &amp; Timeline</h2>
+    </div>
+    <div class="timeline" id="timeline" aria-label="Career timeline">
       <!-- Rendered by JS -->
     </div>
   </div>
@@ -252,6 +304,10 @@
           <a class="contact-link-item" href="https://github.com/reyhan225" target="_blank" rel="noopener">
             <span class="contact-link-icon" aria-hidden="true">⌥</span>
             github.com/reyhan225
+          </a>
+          <a class="contact-link-item" href="https://linkedin.com/in/reyhan-muhamad-rizki" target="_blank" rel="noopener">
+            <span class="contact-link-icon" aria-hidden="true">💼</span>
+            LinkedIn
           </a>
           <span class="contact-link-item">
             <span class="contact-link-icon" aria-hidden="true">📍</span>

@@ -68,6 +68,9 @@
       <button class="admin-tab" data-tab="projects" role="tab" aria-selected="false">
         📁 Projects
       </button>
+      <button class="admin-tab" data-tab="analytics" role="tab" aria-selected="false">
+        📊 Analytics
+      </button>
     </div>
 
     <!-- ===== TAB: MESSAGES ===== -->
@@ -177,6 +180,28 @@
         </form>
       </div>
     </div><!-- end tab-projects -->
+
+      <!-- ===== TAB: ANALYTICS ===== -->
+      <div id="tab-analytics" class="tab-content" role="tabpanel">
+        <div class="admin-card">
+          <div class="admin-card-header">
+            <h3>Visitor Analytics</h3>
+            <div class="admin-card-actions">
+              <select id="analytics-period" class="btn-secondary-sm">
+                <option value="24h">Last 24 Hours</option>
+                <option value="7d" selected>Last 7 Days</option>
+                <option value="30d">Last 30 Days</option>
+                <option value="all">All Time</option>
+              </select>
+              <button id="refresh-analytics-btn" type="button" class="btn-secondary-sm">Refresh</button>
+            </div>
+          </div>
+          <div id="analytics-container">
+            <div class="empty-state">Loading analytics...</div>
+          </div>
+        </div>
+      </div><!-- end tab-analytics -->
+
 
   </div><!-- end admin-wrapper -->
 </div><!-- end admin-panel -->

@@ -227,8 +227,8 @@ async function createProject(projectData) {
 
     await projectRef.set(newProject);
     
-    // Invalidate projects cache
-    cache.clear();
+    // Invalidate projects list cache (individual project not cached yet)
+    cache.delete(cacheKeys.projects());
     
     return { id: projectRef.id, ...projectData };
   } catch (error) {

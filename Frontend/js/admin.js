@@ -163,6 +163,8 @@ async function loadAdminData() {
   await loadMessages();
   if (!authToken) return;
   await loadAdminProjects();
+  if (!authToken) return;
+  await loadAnalytics();
 }
 
 // ===== MESSAGES =====
@@ -643,6 +645,77 @@ function exportProjectsCsv() {
   exportCsv(rows, 'projects.csv');
 }
 
+// ===== ANALYTICS =====
+async function loadAnalytics() {
+  const container = document.getElementById('analytics-container');
+  if (!container) return;
+
+  const period = document.getElementById('analytics-period')?.value || '7d';
+  container.innerHTML = '<div class="empty-state">Loading analytics...</div>';
+
+  try {
+    const res = await fetch(`${API_BASE}/analytics?period=${period}`, { headers: authHeaders() });
+
+    if (res.status === 401 || res.status === 403) {
+      handleUnauthorized();
+      return;
+    }
+
+    if (!res.ok) throw new Error('Failed to load analytics');
+
+    const data = await parseJsonSafe(res);
+    renderAnalytics(data, container);
+  } catch {
+    container.innerHTML = '<div class="empty-state">Failed to load analytics. Make sure the backend is running.</div>';
+  }
+}
+
+function renderAnalytics(data, container) {
+  if (!container || !data) return;
+
+  const summary = data.summary || {};
+  const referrers = data.referrers || [];
+
+  let html = `
+    <div class="analytics-grid">
+      <div class="analytics-stat-card">
+        <span class="analytics-stat-value">${summary.uniqueVisitors || 0}</span>
+        <span class="analytics-stat-label">Unique Visitors</span>
+      </div>
+      <div class="analytics-stat-card">
+        <span class="analytics-stat-value">${summary.totalVisits || 0}</span>
+        <span class="analytics-stat-label">Total Visits</span>
+      </div>
+      <div class="analytics-stat-card">
+        <span class="analytics-stat-value">${summary.activeDays || 0}</span>
+        <span class="analytics-stat-label">Active Days</span>
+      </div>
+    </div>
+  `;
+
+  if (referrers.length > 0) {
+    html += `
+      <h4 style="color: var(--text2); margin-block-end: var(--space-sm);">Top Referrers</h4>
+      <ul class="analytics-referrers-list">
+        ${referrers.map(r => `
+          <li>
+            <span>${escHtml(r.url || 'Direct')}</span>
+            <span class="analytics-referrer-count">${r.count}</span>
+          </li>
+        `).join('')}
+      </ul>
+    `;
+  } else {
+    html += '<p style="color: var(--text3); font-size: 0.85rem;">No referrer data available for this period.</p>';
+  }
+
+  if (data.generatedAt) {
+    html += `<p style="color: var(--text3); font-size: 0.75rem; margin-block-start: var(--space-sm);">Generated: ${formatDate(data.generatedAt)}${data.fromCache ? ' (cached)' : ''}</p>`;
+  }
+
+  container.innerHTML = html;
+}
+
 // ===== UTILS =====
 function showBanner(type, msg) {
   const banner = document.getElementById('admin-alert');
@@ -683,6 +756,8 @@ document.addEventListener('DOMContentLoaded', async () => {
   document.getElementById('clear-cache-btn')?.addEventListener('click', clearCache);
   document.getElementById('export-messages-btn')?.addEventListener('click', exportMessagesCsv);
   document.getElementById('export-projects-btn')?.addEventListener('click', exportProjectsCsv);
+  document.getElementById('refresh-analytics-btn')?.addEventListener('click', loadAnalytics);
+  document.getElementById('analytics-period')?.addEventListener('change', loadAnalytics);
 
   document.getElementById('msg-search')?.addEventListener('input', e => {
     messageSearch = e.target.value || '';

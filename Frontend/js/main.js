@@ -56,7 +56,8 @@ const translations = {
     projects_empty: 'No projects found.',
     projects_empty_search: 'No projects match your search.',
     availability_status: 'Open for freelance, security reviews, and internships',
-    availability_cta: 'Book a call →',
+    availability_cta: 'Get in touch →',
+    hero_cta_resume: '📄 Download CV',
     testimonials_tag: 'Testimonials',
     testimonials_title: 'What collaborators say',
     case_prev: 'Prev',
@@ -88,7 +89,11 @@ const translations = {
     skill_frontend: 'Frontend Development',
     skill_backend: 'Backend Development',
     skill_security: 'Cyber Security',
-    skill_tools: 'Tools & DevOps'
+    skill_tools: 'Tools & DevOps',
+    certs_tag: 'Certifications & Achievements',
+    certs_title: 'Credentials & Recognition',
+    exp_tag: 'Experience',
+    exp_title: 'Journey & Timeline'
   },
   id: {
     nav_about: 'Tentang',
@@ -138,7 +143,8 @@ const translations = {
     projects_empty: 'Proyek tidak ditemukan.',
     projects_empty_search: 'Tidak ada proyek yang cocok dengan pencarian.',
     availability_status: 'Tersedia untuk freelance, security review, dan magang',
-    availability_cta: 'Jadwalkan panggilan →',
+    availability_cta: 'Hubungi saya →',
+    hero_cta_resume: '📄 Unduh CV',
     testimonials_tag: 'Testimoni',
     testimonials_title: 'Kata mereka',
     case_prev: 'Sebelumnya',
@@ -170,7 +176,11 @@ const translations = {
     skill_frontend: 'Pengembangan Frontend',
     skill_backend: 'Pengembangan Backend',
     skill_security: 'Keamanan Siber',
-    skill_tools: 'Tools & DevOps'
+    skill_tools: 'Tools & DevOps',
+    certs_tag: 'Sertifikasi & Pencapaian',
+    certs_title: 'Kredensial & Pengakuan',
+    exp_tag: 'Pengalaman',
+    exp_title: 'Perjalanan & Timeline'
   }
 };
 
@@ -385,34 +395,132 @@ function renderSkills() {
   setTimeout(initScrollAnimation, 0);
 }
 
+// ===== CERTIFICATIONS DATA =====
+const certificationsData = [
+  {
+    icon: '🛡️',
+    title: 'Cyber Security Fundamentals',
+    issuer: 'BINUS University Cyber Security Club',
+    year: '2024',
+    type: 'certification'
+  },
+  {
+    icon: '🏆',
+    title: 'CTF Competition — Top 10 Finalist',
+    issuer: 'National Cyber Security Competition',
+    year: '2024',
+    type: 'achievement'
+  },
+  {
+    icon: '📜',
+    title: 'OWASP Top 10 Practitioner',
+    issuer: 'Self-Study & Lab Practice',
+    year: '2023',
+    type: 'certification'
+  },
+  {
+    icon: '💻',
+    title: 'Full Stack Web Development',
+    issuer: 'Online Certification Program',
+    year: '2023',
+    type: 'certification'
+  }
+];
+
+function renderCertifications() {
+  const grid = document.getElementById('certs-grid');
+  if (!grid) return;
+  grid.innerHTML = certificationsData.map(cert => `
+    <div class="cert-card">
+      <div class="cert-icon">${cert.icon}</div>
+      <div class="cert-info">
+        <div class="cert-title">${escapeHtml(cert.title)}</div>
+        <div class="cert-issuer">${escapeHtml(cert.issuer)}</div>
+        <div class="cert-year">${escapeHtml(cert.year)}</div>
+      </div>
+      <span class="cert-type-badge ${cert.type}">${cert.type === 'certification' ? '✓ Certified' : '★ Achievement'}</span>
+    </div>
+  `).join('');
+}
+
+// ===== EXPERIENCE / TIMELINE DATA =====
+const experienceData = [
+  {
+    year: '2022 – Present',
+    title: 'Computer Science Student',
+    org: 'Bina Nusantara University',
+    description: 'Specializing in Cyber Security & Web Development. Active member of Cyber Security club, participating in CTF competitions.',
+    type: 'education'
+  },
+  {
+    year: '2024',
+    title: 'Security Researcher (Self-Directed)',
+    org: 'Independent',
+    description: 'Conducted simulated penetration tests on lab environments. Practiced OWASP Top 10 vulnerability identification and remediation.',
+    type: 'research'
+  },
+  {
+    year: '2023 – Present',
+    title: 'Freelance Full Stack Developer',
+    org: 'Freelance',
+    description: 'Built full-stack web applications with security baked in from the ground up. Focused on Node.js, React, and secure API design.',
+    type: 'work'
+  },
+  {
+    year: '2023',
+    title: 'CTF Competition Participant',
+    org: 'Multiple Events',
+    description: 'Participated in Capture The Flag competitions focusing on web exploitation, cryptography, and reverse engineering challenges.',
+    type: 'achievement'
+  }
+];
+
+function renderTimeline() {
+  const timeline = document.getElementById('timeline');
+  if (!timeline) return;
+  timeline.innerHTML = experienceData.map((exp, i) => `
+    <div class="timeline-item ${i % 2 === 0 ? 'left' : 'right'}">
+      <div class="timeline-marker">
+        <span class="timeline-dot ${exp.type}"></span>
+      </div>
+      <div class="timeline-content">
+        <div class="timeline-year">${escapeHtml(exp.year)}</div>
+        <h3 class="timeline-title">${escapeHtml(exp.title)}</h3>
+        <div class="timeline-org">${escapeHtml(exp.org)}</div>
+        <p class="timeline-desc">${escapeHtml(exp.description)}</p>
+      </div>
+    </div>
+  `).join('');
+}
+
 // ===== CASE STUDIES =====
 const caseStudies = [
   {
     badge: '🔴 Critical',
     severity: 'CVSS 9.1 — Critical',
-    title: 'CVE-2023-XXXX: SQL Injection in University Portal',
-    summary: 'Extracted full student DB due to raw concatenated queries; implemented parameterized statements and WAF.',
+    title: 'Lab Simulation: SQL Injection in University Portal',
+    summary: 'Simulated full student DB extraction via raw concatenated queries; implemented parameterized statements and WAF as remediation.',
     vector: 'Error/UNION-based SQLi via search parameter without validation.',
     mitigation: 'Prepared statements + strict input whitelist + least-privilege DB user + WAF rules.',
-    tags: ['SQLi', 'Higher-Ed', 'AppSec', 'WAF']
+    tags: ['SQLi', 'Lab', 'AppSec', 'WAF']
   },
   {
     badge: '🟠 High',
     severity: 'CVSS 8.2 — High',
-    title: 'SSRF to Metadata Escalation in Cloud API Gateway',
-    summary: 'Discovered SSRF in PDF import endpoint; could read instance metadata and temporary creds.',
+    title: 'Lab Simulation: SSRF to Metadata Escalation in Cloud API',
+    summary: 'Discovered SSRF vector in PDF import endpoint during lab exercise; demonstrated metadata credential access.',
     vector: 'Unsanitized URL fetch allowed internal HTTP access to metadata endpoint.',
     mitigation: 'URL allowlist, SSRF regex guard, metadata IP block, outbound proxy with egress policy.',
-    tags: ['SSRF', 'Cloud', 'API Security', 'Defense-in-depth']
+    tags: ['SSRF', 'Cloud', 'Lab', 'Defense-in-depth']
   },
   {
     badge: '🟢 Medium',
     severity: 'CVSS 6.5 — Medium',
-    title: 'IDOR in Internship Portal',
-    summary: 'Student grades could be read by changing IDs; no authz check on resource owner.',
+    title: 'Lab Simulation: IDOR in Student Portal',
+    summary: 'Demonstrated grade data access by changing predictable IDs; no authorization check on resource owner.',
     vector: 'Predictable ID parameter with missing authorization check.',
     mitigation: 'Enforce per-user ACL, move to UUIDs, add audit logging, regression test.',
-    tags: ['IDOR', 'Authorization', 'UUID', 'Audit']
+    tags: ['IDOR', 'Authorization', 'Lab', 'Audit']
   }
 ];
 let caseIndex = 0;
@@ -635,7 +743,7 @@ async function handleContactSubmit(e) {
     const res = await fetch(`${API_BASE}/contact`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ name, email, subject, message, website })
+      body: JSON.stringify({ name, email, subject, message, website, _timestamp: Date.now() - 5000 })
     });
 
     const data = await res.json();
@@ -893,6 +1001,10 @@ document.addEventListener('DOMContentLoaded', () => {
   // Skills
   renderSkills();
 
+  // Certifications & Experience
+  renderCertifications();
+  renderTimeline();
+
   // Case studies & testimonials
   renderCaseStudy();
   renderTestimonials();
@@ -917,4 +1029,18 @@ document.addEventListener('DOMContentLoaded', () => {
 
   // Scroll animations (slight delay for DOM paint)
   setTimeout(initScrollAnimation, 100);
+
+  // Analytics tracking
+  try {
+    fetch(`${API_BASE}/analytics/track`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        path: window.location.pathname,
+        referrer: document.referrer || ''
+      })
+    }).catch(() => {});
+  } catch {
+    // Silently fail
+  }
 });

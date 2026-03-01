@@ -230,8 +230,6 @@ function createApp() {
     res.redirect(301, adminBasePath);
   });
 
-  app.use(express.static(path.join(__dirname, '../Frontend')));
-
   // Performance logging middleware
   app.use((req, res, next) => {
     const start = Date.now();
@@ -258,6 +256,8 @@ function createApp() {
     
     next();
   });
+
+  app.use(express.static(path.join(__dirname, '../Frontend')));
 
   app.use('/api/projects', projectsRouter);
   app.use('/api/contact', contactRouter);

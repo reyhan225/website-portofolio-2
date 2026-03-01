@@ -29,13 +29,5 @@
       "purpose": "any"
     }
   ],
-  "categories": ["portfolio", "developer", "security"],
-  "screenshots": [
-    {
-      "src": "/icons/favicon-site.svg",
-      "sizes": "1280x720",
-      "type": "image/svg+xml",
-      "form_factor": "wide"
-    }
-  ]
+  "categories": ["portfolio", "developer", "security"]
 }
