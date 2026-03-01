@@ -289,24 +289,31 @@ function typeWriter() {
   }
 
   const current = taglines[typingIndex];
-  const displayed = isDeleting ? current.slice(0, charIndex - 1) : current.slice(0, charIndex + 1);
+  // Advance or retreat the cursor
+  if (isDeleting) {
+    charIndex = Math.max(0, charIndex - 1);
+  } else {
+    charIndex = Math.min(current.length, charIndex + 1);
+  }
 
-  el.textContent = displayed;
+  el.textContent = current.slice(0, charIndex);
 
-  if (!isDeleting && charIndex === current.length - 1) {
+  // At full string: pause, then start deleting
+  if (!isDeleting && charIndex === current.length) {
     isDeleting = true;
     typingTimeout = setTimeout(typeWriter, 2000);
-    charIndex = current.length;
     return;
   }
 
+  // At empty: move to next tagline and start typing
   if (isDeleting && charIndex === 0) {
     isDeleting = false;
     typingIndex = (typingIndex + 1) % taglines.length;
+    typingTimeout = setTimeout(typeWriter, 180);
+    return;
   }
 
-  charIndex = isDeleting ? charIndex - 1 : charIndex + 1;
-  typingTimeout = setTimeout(typeWriter, isDeleting ? 40 : 80);
+  typingTimeout = setTimeout(typeWriter, isDeleting ? 45 : 85);
 }
 
 function startTypewriter() {
