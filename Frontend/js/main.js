@@ -268,11 +268,15 @@ let typingIndex = 0;
 let charIndex = 0;
 let isDeleting = false;
 let typingTimeout = null;
+let typewriterRun = 0;
 
 function typeWriter() {
+  const runId = typewriterRun;
   const taglines = translations[currentLang].hero_taglines;
   const el = document.getElementById('typed-text');
   if (!el) return;
+
+  if (runId !== typewriterRun) return; // stale timer
 
   if (!Array.isArray(taglines) || taglines.length === 0) {
     el.textContent = '';
@@ -310,6 +314,7 @@ function startTypewriter() {
     clearTimeout(typingTimeout);
     typingTimeout = null;
   }
+  typewriterRun += 1;
   typingIndex = 0;
   charIndex = 0;
   isDeleting = false;
