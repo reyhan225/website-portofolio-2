@@ -3266,6 +3266,10 @@ footer {
   background: linear-gradient(180deg, color-mix(in oklab, var(--bg) 80%, var(--surface) 20%), var(--bg));
 }
 
+#testimonials .section-tag {
+  display: none;
+}
+
 .testimonials-grid {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
