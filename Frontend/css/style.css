@@ -4,18 +4,18 @@
 /* ===== DESIGN TOKENS / CSS VARIABLES ===== */
 :root {
   /* Colors - Base */
-  --bg: #0a0a0f;
-  --bg2: #111118;
-  --bg3: #1a1a24;
-  --surface: #1e1e2e;
-  --surface2: #252535;
-  --border: #2a2a3e;
-  --accent: #00ff88;
-  --accent2: #00ccff;
-  --accent3: #ff6b6b;
-  --text: #e8e8f0;
-  --text2: #9999bb;
-  --text3: #6666aa;
+  --bg: #0d1117;
+  --bg2: #111826;
+  --bg3: #131a2c;
+  --surface: #161b26;
+  --surface2: #1c2230;
+  --border: #202a3a;
+  --accent: #42ffb3;
+  --accent2: #67b8ff;
+  --accent3: #ff7a7a;
+  --text: #f2f4f7;
+  --text2: #b7c0d0;
+  --text3: #7d889c;
   --text-muted: var(--text2);
   --text-bright: var(--text);
 
@@ -156,6 +156,7 @@ html {
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
   text-rendering: optimizeLegibility;
+  font-size: 17px;
 }
 
 body {
@@ -247,50 +248,11 @@ img {
 }
 
 /* ===== BACKGROUND EFFECTS ===== */
-/* Noise Overlay */
-body::before {
-  content: "";
-  position: fixed;
-  inset: 0;
-  background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)' opacity='0.03'/%3E%3C/svg%3E");
-  pointer-events: none;
-  z-index: var(--z-base);
-  opacity: 0.4;
-}
-
-/* Grid Lines */
+/* Simplified background for readability */
+body::before,
+body::after,
 .grid-bg {
-  background-image:
-    linear-gradient(var(--border) 1px, transparent 1px),
-    linear-gradient(90deg, var(--border) 1px, transparent 1px);
-  background-size: 40px 40px;
-  background-position: center center;
-  opacity: 0.15;
-  position: fixed;
-  inset: 0;
-  pointer-events: none;
-  z-index: 2;
-  animation: floatLeftRight 20s ease-in-out infinite;
-}
-
-/* Aurora Background yang Bergerak */
-body::after {
-  content: "";
-  position: fixed;
-  /* Area diperbesar jadi -50% supaya saat bergerak ujung layarnya nggak kepotong */
-  inset: -50%; 
-  pointer-events: none;
-  z-index: 1;
-  background:
-    radial-gradient(circle at 30% 30%, var(--aurora-a) 0%, transparent 40%),
-    radial-gradient(circle at 70% 30%, var(--aurora-b) 0%, transparent 45%),
-    radial-gradient(circle at 40% 70%, var(--aurora-c) 0%, transparent 40%);
-  
-  /* Filter blur ini yang bikin gradiennya menyatu halus layaknya kabut/aurora asli */
-  filter: blur(60px); 
-  
-  /* Panggil animasi pergerakan */
-  animation: auroraMotion 25s ease-in-out infinite alternate;
+  display: none;
 }
 
 /* ===== NAVIGATION ===== */
@@ -489,6 +451,11 @@ nav {
   filter: blur(60px);
   pointer-events: none;
   z-index: -1;
+  --px: 0px;
+  --py: 0px;
+  transform: translate3d(var(--px), var(--py), 0);
+  transition: transform 0.45s var(--transition-spring);
+  will-change: transform;
 }
 
 .hero-glow {
@@ -512,10 +479,10 @@ nav {
 @keyframes floatGlow {
   0%,
   100% {
-    transform: translateY(0) translateX(0);
+    transform: translate3d(var(--px), var(--py), 0) scale(1);
   }
   50% {
-    transform: translateY(-16px) translateX(10px);
+    transform: translate3d(calc(var(--px) + 10px), calc(var(--py) - 16px), 0) scale(1.02);
   }
 }
 
@@ -789,6 +756,7 @@ section:nth-child(even) {
   width: 100%;
   position: relative;
   z-index: 1;
+  line-height: 1.7;
 }
 
 .section-header {
@@ -1505,41 +1473,7 @@ section:nth-child(even) {
   text-decoration: none;
 }
 
-/* Testimonials */
-#testimonials {
-  padding-block: var(--space-2xl);
-}
-
-.testimonial-grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
-  gap: var(--space-md);
-}
-
-.testimonial-card {
-  background: var(--surface2);
-  border: 1px solid var(--border);
-  border-radius: var(--radius-lg);
-  padding: var(--space-md);
-  box-shadow: var(--shadow-sm);
-}
-
-.testimonial-quote {
-  font-size: 1rem;
-  line-height: 1.6;
-  color: var(--text);
-  margin-bottom: var(--space-sm);
-}
-
-.testimonial-meta {
-  color: var(--text2);
-  font-size: 0.9rem;
-}
-
-.testimonial-name {
-  font-weight: 700;
-  color: var(--text);
-}
+/* Testimonials (leaner) */
 
 .code-snippet {
   background: var(--bg2);
@@ -2444,7 +2378,7 @@ footer {
 /* ===== UTILITY CLASSES ===== */
 .fade-in {
   opacity: 0;
-  transform: translateY(20px);
+  transform: translateY(20px) scale(0.98);
   transition:
     opacity 0.6s ease,
     transform 0.6s ease;
@@ -2452,7 +2386,7 @@ footer {
 
 .fade-in.visible {
   opacity: 1;
-  transform: translateY(0);
+  transform: translateY(0) scale(1);
 }
 
 .btn-sm {
@@ -3329,49 +3263,49 @@ footer {
 
 #testimonials {
   padding: calc(var(--space-lg) * 2) 0;
+  background: linear-gradient(180deg, color-mix(in oklab, var(--bg) 80%, var(--surface) 20%), var(--bg));
 }
 
 .testimonials-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
   gap: var(--space-md);
   margin-block: var(--space-lg);
 }
 
 .testimonial-card {
-  background: linear-gradient(135deg, var(--surface-glass) 0%, color-mix(in oklab, var(--surface-glass) 95%, var(--accent) 5%) 100%);
-  border: 1px solid var(--border);
+  background: var(--surface2);
+  border: 1px solid color-mix(in oklab, var(--border) 85%, var(--accent) 15%);
   border-radius: var(--radius-lg);
   padding: var(--space-md);
   display: flex;
   flex-direction: column;
   gap: var(--space-sm);
-  transition: all 0.4s cubic-bezier(0.23, 1, 0.320, 1);
-  backdrop-filter: blur(10px);
-  animation: slideInUp 0.6s ease-out forwards;
-  opacity: 0;
+  transition: transform 0.2s ease, border-color 0.2s ease, box-shadow 0.2s ease;
+  position: relative;
 }
 
-.testimonial-card:nth-child(1) { animation-delay: 0.1s; }
-.testimonial-card:nth-child(2) { animation-delay: 0.2s; }
-.testimonial-card:nth-child(3) { animation-delay: 0.3s; }
-.testimonial-card:nth-child(n+4) { animation-delay: 0.4s; }
+.testimonial-card::before {
+  content: "“";
+  position: absolute;
+  inset-block-start: var(--space-sm);
+  inset-inline-start: var(--space-sm);
+  font-size: 2rem;
+  color: color-mix(in oklab, var(--accent) 75%, var(--text3) 25%);
+  opacity: 0.25;
+  pointer-events: none;
+}
 
 .testimonial-card:hover {
-  border-color: var(--accent);
-  transform: translateY(-8px) scale(1.02);
-  box-shadow: 0 20px 40px color-mix(in oklab, var(--accent) 15%, transparent 85%);
-}
-
-.testimonial-card:hover .testimonial-stars {
-  animation: starPulse 0.6s ease-in-out;
+  border-color: color-mix(in oklab, var(--accent) 60%, var(--border) 40%);
+  transform: translateY(-4px);
+  box-shadow: var(--shadow-md);
 }
 
 .testimonial-stars {
-  font-size: 1.1rem;
-  letter-spacing: 0.1em;
+  font-size: 0.9rem;
+  letter-spacing: 0.08em;
   color: var(--accent);
-  transition: transform 0.3s ease;
 }
 
 .testimonial-text {
@@ -3381,6 +3315,7 @@ footer {
   font-style: italic;
   margin: 0;
   flex-grow: 1;
+  padding-inline-start: var(--space-sm);
 }
 
 .testimonial-author {
@@ -3393,14 +3328,32 @@ footer {
 }
 
 .testimonial-author strong {
-  color: var(--accent);
-  font-size: 0.9rem;
+  color: var(--text);
+  font-size: 0.95rem;
 }
 
 .testimonial-role,
 .testimonial-company {
-  font-size: 0.8rem;
+  font-size: 0.85rem;
   color: var(--text3);
+}
+
+.testimonials-cta {
+  margin-top: var(--space-lg);
+  padding: var(--space-md);
+  border: 1px dashed color-mix(in oklab, var(--border) 70%, var(--accent) 30%);
+  border-radius: var(--radius-lg);
+  background: color-mix(in oklab, var(--surface) 85%, var(--accent) 15%);
+  display: grid;
+  gap: var(--space-sm);
+  justify-items: center;
+  text-align: center;
+}
+
+.testimonials-cta p {
+  margin: 0;
+  color: var(--text);
+  font-weight: 600;
 }
 
 .testimonials-cta {

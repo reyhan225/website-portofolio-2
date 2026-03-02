@@ -18,6 +18,31 @@ const memoryCache = new Map();
 // Track if we've loaded initial data
 const initialDataLoaded = new Map();
 
+// Simple ID generator (works in Node 20 and older)
+function generateId() {
+  return crypto.randomUUID ? crypto.randomUUID() : crypto.randomBytes(8).toString('hex');
+}
+
+// Generic paginator for array-based fallbacks
+function paginateArray(items = [], page = 1, limit = 10) {
+  const total = items.length;
+  const totalPages = Math.max(1, Math.ceil(total / limit));
+  const currentPage = Math.min(Math.max(page, 1), totalPages);
+  const offset = (currentPage - 1) * limit;
+
+  return {
+    slice: items.slice(offset, offset + limit),
+    meta: {
+      page: currentPage,
+      limit,
+      total,
+      totalPages,
+      hasNext: currentPage * limit < total,
+      hasPrev: currentPage > 1
+    }
+  };
+}
+
 function isVercelRuntime() {
   return process.env.VERCEL === '1';
 }
@@ -313,7 +338,14 @@ async function deleteProject(id) {
 async function getMessages({ page = 1, limit = 20, unreadOnly = false } = {}) {
   const db = getDb();
   if (!db) {
-    throw new Error('Firebase not initialized');
+    const all = await readJsonArray('messages.json');
+    const filtered = unreadOnly ? all.filter(m => !m.read) : all;
+    const { slice, meta } = paginateArray(filtered, page, limit);
+    return {
+      data: slice,
+      pagination: meta,
+      fromCache: false
+    };
   }
 
   // Check cache first (only for non-unread queries)
@@ -379,7 +411,17 @@ async function getMessages({ page = 1, limit = 20, unreadOnly = false } = {}) {
 async function addMessage(messageData) {
   const db = getDb();
   if (!db) {
-    throw new Error('Firebase not initialized');
+    const messages = await readJsonArray('messages.json');
+    const newMsg = {
+      id: generateId(),
+      ...messageData,
+      timestamp: new Date().toISOString(),
+      read: false
+    };
+    messages.unshift(newMsg);
+    // keep latest 1000 to avoid unbounded growth
+    await writeJsonArray('messages.json', messages.slice(0, 1000));
+    return newMsg;
   }
   
   try {
@@ -407,7 +449,13 @@ async function addMessage(messageData) {
 async function deleteMessage(messageId) {
   const db = getDb();
   if (!db) {
-    throw new Error('Firebase not initialized');
+    const messages = await readJsonArray('messages.json');
+    const next = messages.filter(m => m.id !== messageId);
+    const removed = next.length !== messages.length;
+    if (removed) {
+      await writeJsonArray('messages.json', next);
+    }
+    return removed;
   }
   
   try {
@@ -431,7 +479,12 @@ async function deleteMessage(messageId) {
 async function markMessageAsRead(messageId) {
   const db = getDb();
   if (!db) {
-    throw new Error('Firebase not initialized');
+    const messages = await readJsonArray('messages.json');
+    const idx = messages.findIndex(m => m.id === messageId);
+    if (idx === -1) return false;
+    messages[idx].read = true;
+    await writeJsonArray('messages.json', messages);
+    return true;
   }
   
   try {
@@ -456,7 +509,17 @@ async function markMessageAsRead(messageId) {
 async function markAllMessagesAsRead() {
   const db = getDb();
   if (!db) {
-    throw new Error('Firebase not initialized');
+    const messages = await readJsonArray('messages.json');
+    let updated = 0;
+    const next = messages.map(m => {
+      if (!m.read) {
+        updated += 1;
+        return { ...m, read: true };
+      }
+      return m;
+    });
+    await writeJsonArray('messages.json', next);
+    return { updated };
   }
 
   try {
@@ -497,7 +560,14 @@ async function markAllMessagesAsRead() {
 async function getTestimonials({ page = 1, limit = 10, approved = null } = {}) {
   const db = getDb();
   if (!db) {
-    throw new Error('Firebase not initialized');
+    const all = await readJsonArray('testimonials.json');
+    const filtered = approved === null ? all : all.filter(t => !!t.approved === !!approved);
+    const { slice, meta } = paginateArray(filtered, page, limit);
+    return {
+      data: slice,
+      pagination: meta,
+      fromCache: false
+    };
   }
 
   // Check cache first (only for approved queries)
@@ -563,7 +633,8 @@ async function getTestimonials({ page = 1, limit = 10, approved = null } = {}) {
 async function getTestimonialById(id) {
   const db = getDb();
   if (!db) {
-    throw new Error('Firebase not initialized');
+    const all = await readJsonArray('testimonials.json');
+    return all.find(t => t.id === id) || null;
   }
 
   try {
@@ -586,7 +657,23 @@ async function getTestimonialById(id) {
 async function createTestimonial(testimonialData) {
   const db = getDb();
   if (!db) {
-    throw new Error('Firebase not initialized');
+    const testimonials = await readJsonArray('testimonials.json');
+    const now = new Date().toISOString();
+    const newItem = {
+      id: generateId(),
+      author: testimonialData.author || '',
+      position: testimonialData.position || '',
+      company: testimonialData.company || '',
+      content: testimonialData.content || '',
+      rating: testimonialData.rating || 5,
+      email: testimonialData.email || '',
+      approved: !!testimonialData.approved,
+      createdAt: now,
+      updatedAt: now
+    };
+    testimonials.unshift(newItem);
+    await writeJsonArray('testimonials.json', testimonials.slice(0, 500));
+    return newItem;
   }
 
   try {
@@ -627,7 +714,17 @@ async function createTestimonial(testimonialData) {
 async function updateTestimonial(id, updates) {
   const db = getDb();
   if (!db) {
-    throw new Error('Firebase not initialized');
+    const testimonials = await readJsonArray('testimonials.json');
+    const idx = testimonials.findIndex(t => t.id === id);
+    if (idx === -1) return null;
+    const updated = {
+      ...testimonials[idx],
+      ...updates,
+      updatedAt: new Date().toISOString()
+    };
+    testimonials[idx] = updated;
+    await writeJsonArray('testimonials.json', testimonials);
+    return updated;
   }
 
   try {
@@ -674,7 +771,13 @@ async function approveTestimonial(id) {
 async function deleteTestimonial(id) {
   const db = getDb();
   if (!db) {
-    throw new Error('Firebase not initialized');
+    const testimonials = await readJsonArray('testimonials.json');
+    const next = testimonials.filter(t => t.id !== id);
+    const removed = next.length !== testimonials.length;
+    if (removed) {
+      await writeJsonArray('testimonials.json', next);
+    }
+    return removed;
   }
 
   try {

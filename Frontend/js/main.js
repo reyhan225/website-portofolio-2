@@ -60,6 +60,15 @@ const translations = {
     hero_cta_resume: '📄 Download CV',
     testimonials_tag: 'Testimonials',
     testimonials_title: 'What collaborators say',
+    testimonials_loading: 'Loading testimonials...',
+    testimonials_cta: 'Want to share your experience working with me?',
+    testimonials_share_btn: 'Share Your Feedback',
+    testimonials_form_title: 'Share Your Testimonial',
+    testimonials_position: 'Position',
+    testimonials_company: 'Company',
+    testimonials_rating: 'Rating',
+    testimonials_empty: 'No testimonials yet. Be the first to share!',
+    testimonials_error: 'Unable to load testimonials right now.',
     case_prev: 'Prev',
     case_next: 'Next',
     security_tag: 'Case Study',
@@ -75,6 +84,8 @@ const translations = {
     form_email: 'Email Address',
     form_subject: 'Subject',
     form_message: 'Message',
+    form_submit: 'Submit Testimonial',
+    form_cancel: 'Cancel',
     form_send: 'Send Message',
     form_sending: 'Sending...',
     form_success: '✓ Message sent! I\'ll reply within 24 hours.',
@@ -147,6 +158,15 @@ const translations = {
     hero_cta_resume: '📄 Unduh CV',
     testimonials_tag: 'Testimoni',
     testimonials_title: 'Kata mereka',
+    testimonials_loading: 'Memuat testimoni...',
+    testimonials_cta: 'Ingin berbagi pengalaman bekerja dengan saya?',
+    testimonials_share_btn: 'Tulis Testimoni',
+    testimonials_form_title: 'Bagikan Testimoni Anda',
+    testimonials_position: 'Posisi',
+    testimonials_company: 'Perusahaan',
+    testimonials_rating: 'Rating',
+    testimonials_empty: 'Belum ada testimoni. Jadilah yang pertama!',
+    testimonials_error: 'Tidak dapat memuat testimoni saat ini.',
     case_prev: 'Sebelumnya',
     case_next: 'Berikutnya',
     security_tag: 'Studi Kasus',
@@ -162,6 +182,8 @@ const translations = {
     form_email: 'Alamat Email',
     form_subject: 'Subjek',
     form_message: 'Pesan',
+    form_submit: 'Kirim Testimoni',
+    form_cancel: 'Batal',
     form_send: 'Kirim Pesan',
     form_sending: 'Mengirim...',
     form_success: '✓ Pesan terkirim! Saya akan membalas dalam 24 jam.',
@@ -186,8 +208,11 @@ const translations = {
 
 let currentLang = localStorage.getItem('lang') || 'en';
 
-function t(key) {
-  return translations[currentLang][key] || key;
+function t(key, fallback = '') {
+  const value = translations[currentLang]?.[key];
+  if (value) return value;
+  if (fallback) return fallback;
+  return translations.en?.[key] || key;
 }
 
 // ===== UTILITY FUNCTIONS =====
@@ -234,8 +259,12 @@ function initScrollAnimation() {
     });
   }, { threshold: 0.1 });
 
-  document.querySelectorAll('.skill-category, .project-card, .detail-card, .case-block, .fade-in').forEach(el => {
+  const targets = Array.from(document.querySelectorAll('.skill-category, .project-card, .detail-card, .case-block, .fade-in'));
+  targets.forEach((el, idx) => {
     el.classList.add('fade-in');
+    // Lighter stagger to avoid flashy cascade
+    const delay = Math.min(idx * 30, 240);
+    el.style.transitionDelay = `${delay}ms`;
     observer.observe(el);
   });
 }
@@ -257,11 +286,13 @@ function applyTranslations() {
   document.documentElement.lang = currentLang === 'id' ? 'id' : 'en';
   document.querySelectorAll('[data-i18n]').forEach(el => {
     const key = el.getAttribute('data-i18n');
-    el.textContent = t(key);
+    const existing = el.textContent;
+    el.textContent = t(key, existing);
   });
   document.querySelectorAll('[data-i18n-placeholder]').forEach(el => {
     const key = el.getAttribute('data-i18n-placeholder');
-    el.placeholder = t(key);
+    const existing = el.placeholder;
+    el.placeholder = t(key, existing);
   });
 }
 
@@ -607,38 +638,44 @@ async function downloadCV() {
   }
 }
 
-// ===== LEGACY TESTIMONIALS =====
-const testimonials = [
+// ===== TESTIMONIALS =====
+const testimonialFallback = [
   {
-    quote: 'Reyhan paired strong security instincts with pragmatic delivery. We shipped faster and safer.',
-    name: 'Dimas Putra',
-    role: 'CTO, EduTech Startup'
+    content: 'Reyhan paired strong security instincts with pragmatic delivery. We shipped faster and safer.',
+    author: 'Dimas Putra',
+    position: 'CTO, EduTech Startup',
+    company: '',
+    rating: 5
   },
   {
-    quote: 'Clear comms, solid code reviews, and caught an auth bug before launch.',
-    name: 'Annisa Rahma',
-    role: 'Product Manager, SaaS'
+    content: 'Clear comms, solid code reviews, and caught an auth bug before launch.',
+    author: 'Annisa Rahma',
+    position: 'Product Manager, SaaS',
+    company: '',
+    rating: 5
   },
   {
-    quote: 'His penetration test found a critical SSRF we missed. Mitigation plan was actionable.',
-    name: 'Ravi Narayan',
-    role: 'Lead DevOps Engineer'
+    content: 'His penetration test found a critical SSRF we missed. Mitigation plan was actionable.',
+    author: 'Ravi Narayan',
+    position: 'Lead DevOps Engineer',
+    company: '',
+    rating: 5
+  },
+  {
+    content: 'Reyhan always brings secure-by-design thinking; our releases are smoother.',
+    author: 'Aisha Pratama',
+    position: 'Security Lead',
+    company: 'Binus Cyber Club',
+    rating: 5
+  },
+  {
+    content: 'Deliverables were fast, docs clear, and APIs survived our load tests.',
+    author: 'Michael Setiawan',
+    position: 'Product Manager',
+    company: 'Freelance Client',
+    rating: 5
   }
 ];
-
-function renderTestimonials() {
-  const grid = document.getElementById('testimonial-grid');
-  if (!grid) return;
-  grid.innerHTML = testimonials.map(t => `
-    <div class="testimonial-card">
-      <p class="testimonial-quote">“${escapeHtml(t.quote)}”</p>
-      <div class="testimonial-meta">
-        <div class="testimonial-name">${escapeHtml(t.name)}</div>
-        <div class="testimonial-role">${escapeHtml(t.role)}</div>
-      </div>
-    </div>
-  `).join('');
-}
 
 // ===== PROJECTS =====
 let allProjects = [];
@@ -1017,7 +1054,31 @@ function initMobileNav() {
   });
 }
 
-// ===== TESTIMONIALS =====
+function renderTestimonialCards(items, grid) {
+  const safeItems = Array.isArray(items) ? items : [];
+  if (!safeItems.length) {
+    grid.innerHTML = `<div class="empty-state">${t('testimonials_empty')}</div>`;
+    return;
+  }
+
+  let html = '';
+  for (const item of safeItems) {
+    const stars = '⭐'.repeat(Math.min(5, Math.max(1, item.rating || 5)));
+    html += `
+      <div class="testimonial-card">
+        <div class="testimonial-stars" aria-hidden="true">${stars}</div>
+        <p class="testimonial-text">"${escapeHtml(item.content || '')}"</p>
+        <div class="testimonial-author">
+          <strong>${escapeHtml(item.author || 'Anonymous')}</strong>
+          ${item.position ? `<span class="testimonial-role">${escapeHtml(item.position)}</span>` : ''}
+          ${item.company ? `<span class="testimonial-company">${escapeHtml(item.company)}</span>` : ''}
+        </div>
+      </div>
+    `;
+  }
+  grid.innerHTML = html;
+}
+
 async function loadTestimonials() {
   const grid = document.getElementById('testimonials-grid');
   if (!grid) return;
@@ -1029,32 +1090,16 @@ async function loadTestimonials() {
     if (!res.ok) throw new Error('Failed to load testimonials');
 
     const data = await res.json();
-    const testimonials = data.data || [];
+    const items = data.data || [];
 
-    if (!testimonials.length) {
-      grid.innerHTML = `<div class="empty-state">No testimonials yet. Be the first to share!</div>`;
-      return;
+    if (!items.length) {
+      renderTestimonialCards(testimonialFallback, grid);
+    } else {
+      renderTestimonialCards(items, grid);
     }
-
-    let html = '';
-    for (const t of testimonials) {
-      const stars = '⭐'.repeat(Math.min(5, Math.max(1, t.rating || 5)));
-      html += `
-        <div class="testimonial-card">
-          <div class="testimonial-stars">${stars}</div>
-          <p class="testimonial-text">"${escapeHtml(t.content)}"</p>
-          <div class="testimonial-author">
-            <strong>${escapeHtml(t.author)}</strong>
-            ${t.position ? `<span class="testimonial-role">${escapeHtml(t.position)}</span>` : ''}
-            ${t.company ? `<span class="testimonial-company">${escapeHtml(t.company)}</span>` : ''}
-          </div>
-        </div>
-      `;
-    }
-    grid.innerHTML = html;
   } catch (e) {
     console.error('Error loading testimonials:', e);
-    grid.innerHTML = `<div class="empty-state">Unable to load testimonials at this time</div>`;
+    renderTestimonialCards(testimonialFallback, grid);
   }
 }
 
@@ -1073,6 +1118,11 @@ function setupTestimonialModal() {
     modal.setAttribute('aria-hidden', 'false');
     modal.classList.add('open');
     form.reset();
+    // set timestamp for honeypot timing
+    const tsField = document.getElementById('testimonial-ts');
+    if (tsField) tsField.value = Date.now().toString();
+    const hp = document.getElementById('testimonial-website');
+    if (hp) hp.value = '';
     document.querySelectorAll('#rating-input .star').forEach((s, i) => {
       if (i === 4) s.classList.add('active');
       else s.classList.remove('active');
@@ -1117,6 +1167,8 @@ function setupTestimonialModal() {
     const email = document.getElementById('testimonial-email').value.trim();
     const content = document.getElementById('testimonial-content').value.trim();
     const rating = parseInt(document.getElementById('testimonial-rating').value, 10);
+    const website = document.getElementById('testimonial-website')?.value || '';
+    const _timestamp = document.getElementById('testimonial-ts')?.value || '';
 
     if (!author || !email || !content) {
       alert('Please fill in all required fields');
@@ -1136,7 +1188,7 @@ function setupTestimonialModal() {
       const res = await fetch(`${API_BASE}/testimonials`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ author, position, company, email, content, rating })
+        body: JSON.stringify({ author, position, company, email, content, rating, website, _timestamp })
       });
 
       const data = await res.json();
@@ -1204,7 +1256,6 @@ document.addEventListener('DOMContentLoaded', () => {
 
   // Case studies & testimonials
   renderCaseStudy();
-  renderTestimonials();
   document.getElementById('case-prev')?.addEventListener('click', () => nextCase(-1));
   document.getElementById('case-next')?.addEventListener('click', () => nextCase(1));
 
@@ -1226,6 +1277,7 @@ document.addEventListener('DOMContentLoaded', () => {
   // Scroll
   initSmoothScroll();
   initMobileNav();
+  initHeroParallax();
 
   // Testimonials
   loadTestimonials();

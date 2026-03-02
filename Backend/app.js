@@ -43,6 +43,9 @@ function assertProductionEnv() {
   if (!process.env.ADMIN_JWT_SECRET) {
     throw new Error('Missing ADMIN_JWT_SECRET in production.');
   }
+  if (!process.env.ADMIN_ALLOWED_IPS) {
+    throw new Error('Missing ADMIN_ALLOWED_IPS in production. Set at least one static IP (CSV).');
+  }
 }
 
 function buildAllowedOrigins() {
@@ -101,15 +104,15 @@ function isSameOriginRequest(req, origin) {
 }
 
 function isAllowedVercelDeployment(origin) {
-  const allowedPrefixes = [
-    'website-portofolio-2',
-    'admin-reyhan-muhamad-rizki',
-    'reyhan-muhamad-rizki'
-  ];
+  // Explicitly allow only known deployments; avoid prefix wildcards
+  const allowedHosts = new Set([
+    'reyhan-muhamad-rizki.vercel.app',
+    'admin-reyhan-muhamad-rizki.vercel.app',
+    'website-portofolio-2.vercel.app'
+  ]);
   try {
     const host = new URL(origin).host.toLowerCase();
-    if (!host.endsWith('.vercel.app')) return false;
-    return allowedPrefixes.some(prefix => host === `${prefix}.vercel.app` || host.startsWith(`${prefix}-`));
+    return allowedHosts.has(host);
   } catch {
     return false;
   }
@@ -197,6 +200,12 @@ function createApp() {
     message: { error: 'Too many messages sent. Please wait before sending again.' }
   });
 
+  const testimonialLimiter = rateLimit({
+    windowMs: 60 * 60 * 1000,
+    max: 8,
+    message: { error: 'Too many testimonials. Please try again later.' }
+  });
+
   const loginLimiter = rateLimit({
     windowMs: 15 * 60 * 1000,
     max: 6,
@@ -217,6 +226,13 @@ function createApp() {
   app.use('/api/contact', (req, res, next) => {
     if (req.method === 'POST') return contactLimiter(req, res, next);
     if (req.method === 'PATCH' || req.method === 'DELETE') {
+      return adminWriteLimiter(req, res, next);
+    }
+    return next();
+  });
+  app.use('/api/testimonials', (req, res, next) => {
+    if (req.method === 'POST') return testimonialLimiter(req, res, next);
+    if (req.method === 'PUT' || req.method === 'DELETE' || req.method === 'POST' && req.path.endsWith('/approve')) {
       return adminWriteLimiter(req, res, next);
     }
     return next();

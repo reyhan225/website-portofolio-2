@@ -1,8 +1,18 @@
 const express = require('express');
+const rateLimit = require('express-rate-limit');
 const { requireAdmin } = require('../middleware/adminAuth');
 const { getAnalytics, trackVisitor, hashIp } = require('../utils/dataStore');
 const { sendError } = require('../utils/http');
 const router = express.Router();
+
+// Limit tracking spam (per IP)
+const trackLimiter = rateLimit({
+  windowMs: 15 * 60 * 1000,
+  max: 60,
+  standardHeaders: true,
+  legacyHeaders: false,
+  message: { success: true, tracked: false, reason: 'Rate limited' }
+});
 
 // Get client IP helper
 function getClientIp(req) {
@@ -14,7 +24,7 @@ function getClientIp(req) {
 }
 
 // POST track visitor (called from frontend or middleware)
-router.post('/track', async (req, res) => {
+router.post('/track', trackLimiter, async (req, res) => {
   try {
     const ip = getClientIp(req);
     const userAgent = req.get('user-agent') || '';

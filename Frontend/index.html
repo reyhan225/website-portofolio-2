@@ -243,8 +243,7 @@
 <section id="testimonials">
   <div class="container">
     <div class="section-header">
-      <div class="section-tag" data-i18n="testimonials_tag">What Others Say</div>
-      <h2 class="section-title" data-i18n="testimonials_title">Client Testimonials</h2>
+      <h2 class="section-title" data-i18n="testimonials_title">What collaborators say</h2>
     </div>
     <div id="testimonials-grid" class="testimonials-grid" aria-label="Client testimonials">
       <div class="empty-state" data-i18n="testimonials_loading">Loading testimonials...</div>
@@ -282,6 +281,9 @@
         <label for="testimonial-email" data-i18n="form_email">Email Address *</label>
         <input type="email" id="testimonial-email" name="email" placeholder="your@email.com" required aria-required="true" />
       </div>
+      <!-- Honeypot + timestamp anti-bot fields -->
+      <input type="text" id="testimonial-website" name="website" class="sr-only" tabindex="-1" autocomplete="off" aria-hidden="true" style="position:absolute;left:-9999px;opacity:0;height:0;width:0;" />
+      <input type="hidden" id="testimonial-ts" name="_timestamp" />
       <div class="form-group">
         <label data-i18n="testimonials_rating">Rating *</label>
         <div class="rating-input" id="rating-input">

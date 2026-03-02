@@ -1,0 +1,26 @@
+[
+  {
+    "id": "seed-1",
+    "author": "Aisha Pratama",
+    "position": "Security Lead",
+    "company": "Binus Cyber Club",
+    "content": "Reyhan selalu membawa perspektif secure-by-design ke tiap proyek. Code review dengannya jadi jauh lebih rapi dan aman.",
+    "rating": 5,
+    "email": "aisha@example.com",
+    "approved": true,
+    "createdAt": "2024-10-01T10:00:00.000Z",
+    "updatedAt": "2024-10-01T10:00:00.000Z"
+  },
+  {
+    "id": "seed-2",
+    "author": "Michael Setiawan",
+    "position": "Product Manager",
+    "company": "Freelance Client",
+    "content": "Deliverable-nya cepat, dokumentasi jelas, dan API-nya tahan banting waktu load test. Sangat direkomendasikan.",
+    "rating": 5,
+    "email": "michael@example.com",
+    "approved": true,
+    "createdAt": "2024-11-15T09:00:00.000Z",
+    "updatedAt": "2024-11-15T09:00:00.000Z"
+  }
+]
