@@ -484,6 +484,219 @@ async function markAllMessagesAsRead() {
   }
 }
 
+// ==================== TESTIMONIALS (Firestore) ====================
+
+/**
+ * Get testimonials with pagination
+ * @param {Object} options - Query options
+ * @param {number} options.page - Page number
+ * @param {number} options.limit - Items per page
+ * @param {boolean} options.approved - Filter by approval status (optional)
+ * @returns {Promise<Object>} Paginated results
+ */
+async function getTestimonials({ page = 1, limit = 10, approved = null } = {}) {
+  const db = getDb();
+  if (!db) {
+    throw new Error('Firebase not initialized');
+  }
+
+  // Check cache first (only for approved queries)
+  const cacheKey = cacheKeys.testimonials(page, limit, approved);
+  if (approved !== null) {
+    const cached = cache.get(cacheKey);
+    if (cached) {
+      return { ...cached, fromCache: true };
+    }
+  }
+
+  try {
+    let query = db.collection('testimonials')
+      .orderBy('createdAt', 'desc');
+
+    if (approved !== null) {
+      query = query.where('approved', '==', approved);
+    }
+
+    // Get total count
+    const countSnapshot = await query.count().get();
+    const total = countSnapshot.data().count;
+
+    // Apply pagination
+    const offset = (page - 1) * limit;
+    query = query.limit(limit).offset(offset);
+
+    const snapshot = await query.get();
+    const testimonials = [];
+    snapshot.forEach(doc => {
+      testimonials.push({ id: doc.id, ...doc.data() });
+    });
+
+    const result = {
+      data: testimonials,
+      pagination: {
+        page,
+        limit,
+        total,
+        totalPages: Math.ceil(total / limit),
+        hasNext: page * limit < total,
+        hasPrev: page > 1
+      }
+    };
+
+    // Cache for approved queries only
+    if (approved !== null) {
+      cache.set(cacheKey, result, cacheTTL.testimonials);
+    }
+
+    return result;
+  } catch (error) {
+    console.error('Error fetching testimonials:', error);
+    throw error;
+  }
+}
+
+/**
+ * Get single testimonial by ID
+ * @param {string} id - Testimonial ID
+ * @returns {Promise<Object|null>} Testimonial data or null
+ */
+async function getTestimonialById(id) {
+  const db = getDb();
+  if (!db) {
+    throw new Error('Firebase not initialized');
+  }
+
+  try {
+    const doc = await db.collection('testimonials').doc(id).get();
+    if (!doc.exists) {
+      return null;
+    }
+    return { id: doc.id, ...doc.data() };
+  } catch (error) {
+    console.error('Error fetching testimonial:', error);
+    throw error;
+  }
+}
+
+/**
+ * Create a new testimonial
+ * @param {Object} testimonialData - Testimonial data
+ * @returns {Promise<Object>} Created testimonial with ID
+ */
+async function createTestimonial(testimonialData) {
+  const db = getDb();
+  if (!db) {
+    throw new Error('Firebase not initialized');
+  }
+
+  try {
+    const now = Timestamp.now();
+    const docRef = await db.collection('testimonials').add({
+      author: testimonialData.author || '',
+      position: testimonialData.position || '',
+      company: testimonialData.company || '',
+      content: testimonialData.content || '',
+      rating: testimonialData.rating || 5,
+      email: testimonialData.email || '',
+      approved: testimonialData.approved || false,
+      createdAt: now,
+      updatedAt: now
+    });
+
+    // Invalidate cache
+    cache.delete(cacheKeys.testimonials());
+
+    return {
+      id: docRef.id,
+      ...testimonialData,
+      createdAt: now,
+      updatedAt: now
+    };
+  } catch (error) {
+    console.error('Error creating testimonial:', error);
+    throw error;
+  }
+}
+
+/**
+ * Update testimonial
+ * @param {string} id - Testimonial ID
+ * @param {Object} updates - Fields to update
+ * @returns {Promise<Object|null>} Updated testimonial or null
+ */
+async function updateTestimonial(id, updates) {
+  const db = getDb();
+  if (!db) {
+    throw new Error('Firebase not initialized');
+  }
+
+  try {
+    const docRef = db.collection('testimonials').doc(id);
+    const doc = await docRef.get();
+
+    if (!doc.exists) {
+      return null;
+    }
+
+    const updatedAt = Timestamp.now();
+    const updateData = {
+      ...updates,
+      updatedAt
+    };
+
+    await docRef.update(updateData);
+
+    // Invalidate cache
+    cache.delete(cacheKeys.testimonials());
+
+    const updated = await docRef.get();
+    return { id: updated.id, ...updated.data() };
+  } catch (error) {
+    console.error('Error updating testimonial:', error);
+    throw error;
+  }
+}
+
+/**
+ * Approve a testimonial
+ * @param {string} id - Testimonial ID
+ * @returns {Promise<Object|null>} Updated testimonial or null
+ */
+async function approveTestimonial(id) {
+  return updateTestimonial(id, { approved: true });
+}
+
+/**
+ * Delete testimonial
+ * @param {string} id - Testimonial ID
+ * @returns {Promise<boolean>} True if deleted, false if not found
+ */
+async function deleteTestimonial(id) {
+  const db = getDb();
+  if (!db) {
+    throw new Error('Firebase not initialized');
+  }
+
+  try {
+    const docRef = db.collection('testimonials').doc(id);
+    const doc = await docRef.get();
+
+    if (!doc.exists) {
+      return false;
+    }
+
+    await docRef.delete();
+
+    // Invalidate cache
+    cache.delete(cacheKeys.testimonials());
+
+    return true;
+  } catch (error) {
+    console.error('Error deleting testimonial:', error);
+    throw error;
+  }
+}
+
 // ==================== VISITORS / ANALYTICS (Firestore) ====================
 
 /**
@@ -740,6 +953,14 @@ module.exports = {
   deleteMessage,
   markMessageAsRead,
   markAllMessagesAsRead,
+
+  // Testimonials
+  getTestimonials,
+  getTestimonialById,
+  createTestimonial,
+  updateTestimonial,
+  approveTestimonial,
+  deleteTestimonial,
   
   // Analytics
   trackVisitor,

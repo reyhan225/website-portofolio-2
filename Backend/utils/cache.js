@@ -133,6 +133,7 @@ const cacheKeys = {
   projects: (page = 1, limit = 10) => `projects:page:${page}:limit:${limit}`,
   project: (id) => `project:${id}`,
   messages: (page = 1, limit = 20) => `messages:page:${page}:limit:${limit}`,
+  testimonials: (page = 1, limit = 10, approved = null) => `testimonials:page:${page}:limit:${limit}:approved:${approved}`,
   analytics: (period = '24h') => `analytics:${period}`,
   health: () => 'health:status'
 };
@@ -142,6 +143,7 @@ const cacheTTL = {
   projects: 300,      // 5 minutes
   project: 600,       // 10 minutes
   messages: 60,       // 1 minute (frequently changing)
+  testimonials: 300,  // 5 minutes (approved testimonials)
   analytics: 300,     // 5 minutes
   health: 30          // 30 seconds
 };

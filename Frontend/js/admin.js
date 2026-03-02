@@ -1,3 +1,4 @@
+
 /* =========================================
    admin.js - Admin Panel Logic
    ========================================= */
@@ -10,6 +11,7 @@ let authToken = sessionStorage.getItem(ADMIN_TOKEN_KEY) || null;
 let editingProjectId = null;
 let allMessages = [];
 let allAdminProjects = [];
+let allTestimonials = [];
 let messageSearch = '';
 let messageUnreadOnly = false;
 let messagePage = 1;
@@ -18,6 +20,10 @@ const messagePageSize = 20;
 let projectPage = 1;
 let projectTotalPages = 1;
 const projectPageSize = 10;
+let testimonialPage = 1;
+let testimonialTotalPages = 1;
+let testimonialFilter = 'all';
+const testimonialPageSize = 10;
 
 // ===== THEME =====
 const savedTheme = localStorage.getItem('theme') || 'dark';
@@ -161,6 +167,8 @@ async function loadAdminData() {
   }
 
   await loadMessages();
+  if (!authToken) return;
+  await loadTestimonials();
   if (!authToken) return;
   await loadAdminProjects();
   if (!authToken) return;
@@ -645,7 +653,185 @@ function exportProjectsCsv() {
   exportCsv(rows, 'projects.csv');
 }
 
-// ===== ANALYTICS =====
+// ===== TESTIMONIALS =====
+async function loadTestimonials(page = 1) {
+  const container = document.getElementById('testimonials-container');
+  if (!container) return;
+
+  testimonialPage = Math.max(1, page);
+  container.innerHTML = '<div class="empty-state">Loading testimonials...</div>';
+
+  try {
+    const approved = testimonialFilter === 'approved' ? true : (testimonialFilter === 'pending' ? false : null);
+    const query = new URLSearchParams({
+      page: testimonialPage,
+      limit: testimonialPageSize,
+      ...(approved !== null && { approved })
+    });
+
+    const url = testimonialFilter === 'pending' 
+      ? `${API_BASE}/testimonials/admin/pending?${query}`
+      : `${API_BASE}/testimonials?${query}`;
+
+    const res = await fetch(url, { headers: authHeaders() });
+
+    if (res.status === 401 || res.status === 403) {
+      handleUnauthorized();
+      return;
+    }
+
+    if (!res.ok) throw new Error('Failed to load testimonials');
+
+    const data = await parseJsonSafe(res);
+    allTestimonials = data.data || [];
+    const pagination = data.pagination || {};
+    
+    testimonialTotalPages = pagination.totalPages || 1;
+    
+    document.getElementById('testimonial-count').textContent = `${pagination.total || 0} total`;
+    document.getElementById('test-page-label').textContent = `Page ${testimonialPage} of ${testimonialTotalPages}`;
+    
+    document.getElementById('test-prev').disabled = !pagination.hasPrev;
+    document.getElementById('test-next').disabled = !pagination.hasNext;
+
+    renderTestimonials(allTestimonials, container);
+  } catch (e) {
+    console.error('Error loading testimonials:', e);
+    container.innerHTML = '<div class="empty-state">Failed to load testimonials</div>';
+  }
+}
+
+function renderTestimonials(testimonials, container) {
+  if (!container) return;
+
+  if (!testimonials || testimonials.length === 0) {
+    container.innerHTML = '<div class="empty-state">No testimonials</div>';
+    return;
+  }
+
+  let html = '<div class="testimonials-list">';
+  
+  for (const t of testimonials) {
+    const ratingStars = '⭐'.repeat(Math.min(5, Math.max(1, t.rating || 5)));
+    const statusBadge = t.approved 
+      ? '<span class="badge badge-success">✓ Approved</span>'
+      : '<span class="badge badge-warning">⏳ Pending</span>';
+    
+    html += `
+      <div class="testimonial-item">
+        <div class="testimonial-header">
+          <div>
+            <strong>${escapeHtml(t.author || 'Anonymous')}</strong>
+            <span class="testimonial-subtitle">${escapeHtml(t.position || '')}${t.company ? ` at ${escapeHtml(t.company)}` : ''}</span>
+          </div>
+          ${statusBadge}
+        </div>
+        <div class="testimonial-rating">${ratingStars} (${t.rating}/5)</div>
+        <p class="testimonial-content">${escapeHtml(t.content)}</p>
+        <div class="testimonial-actions">
+          ${!t.approved ? `<button class="btn-secondary-sm" onclick="approveTestimonial('${escapeHtml(t.id)}')">Approve</button>` : ''}
+          <button class="btn-secondary-sm" onclick="editTestimonial('${escapeHtml(t.id)}')">Edit</button>
+          <button class="btn-danger" onclick="deleteTestimonial('${escapeHtml(t.id)}')">Delete</button>
+        </div>
+      </div>
+    `;
+  }
+  
+  html += '</div>';
+  container.innerHTML = html;
+}
+
+async function approveTestimonial(id) {
+  if (!confirm('Approve this testimonial?')) return;
+  
+  try {
+    const res = await fetch(`${API_BASE}/testimonials/${id}/approve`, {
+      method: 'POST',
+      headers: authHeaders()
+    });
+
+    if (res.status === 401 || res.status === 403) {
+      handleUnauthorized();
+      return;
+    }
+
+    if (!res.ok) throw new Error('Failed to approve');
+
+    showAlert('Testimonial approved!', 'success');
+    loadTestimonials(testimonialPage);
+  } catch (e) {
+    showAlert('Error: ' + e.message, 'error');
+  }
+}
+
+async function deleteTestimonial(id) {
+  if (!confirm('Delete this testimonial permanently?')) return;
+  
+  try {
+    const res = await fetch(`${API_BASE}/testimonials/${id}`, {
+      method: 'DELETE',
+      headers: authHeaders()
+    });
+
+    if (res.status === 401 || res.status === 403) {
+      handleUnauthorized();
+      return;
+    }
+
+    if (!res.ok) throw new Error('Failed to delete');
+
+    showAlert('Testimonial deleted', 'success');
+    loadTestimonials(testimonialPage);
+  } catch (e) {
+    showAlert('Error: ' + e.message, 'error');
+  }
+}
+
+function editTestimonial(id) {
+  const t = allTestimonials.find(x => x.id === id);
+  if (!t) return;
+  
+  const newContent = prompt('Edit testimonial content:', t.content);
+  if (!newContent) return;
+
+  updateTestimonial(id, { content: newContent });
+}
+
+async function updateTestimonial(id, updates) {
+  try {
+    const res = await fetch(`${API_BASE}/testimonials/${id}`, {
+      method: 'PUT',
+      headers: authHeaders(),
+      body: JSON.stringify(updates)
+    });
+
+    if (res.status === 401 || res.status === 403) {
+      handleUnauthorized();
+      return;
+    }
+
+    if (!res.ok) throw new Error('Failed to update');
+
+    showAlert('Testimonial updated', 'success');
+    loadTestimonials(testimonialPage);
+  } catch (e) {
+    showAlert('Error: ' + e.message, 'error');
+  }
+}
+
+function goToTestimonialPage(delta) {
+  const newPage = testimonialPage + delta;
+  if (newPage >= 1 && newPage <= testimonialTotalPages) {
+    loadTestimonials(newPage);
+  }
+}
+
+function refreshTestimonials() {
+  testimonialPage = 1;
+  loadTestimonials();
+}
+
+// ===== ANALYTICS ===== 
 async function loadAnalytics() {
   const container = document.getElementById('analytics-container');
   if (!container) return;
@@ -744,6 +930,9 @@ window.deleteMessage = deleteMessage;
 window.markRead = markRead;
 window.editProject = editProject;
 window.deleteProject = deleteProject;
+window.approveTestimonial = approveTestimonial;
+window.deleteTestimonial = deleteTestimonial;
+window.editTestimonial = editTestimonial;
 
 // ===== INIT =====
 document.addEventListener('DOMContentLoaded', async () => {
@@ -771,6 +960,14 @@ document.addEventListener('DOMContentLoaded', async () => {
   });
   document.getElementById('msg-prev')?.addEventListener('click', () => goToMessagePage(-1));
   document.getElementById('msg-next')?.addEventListener('click', () => goToMessagePage(1));
+  document.getElementById('test-prev')?.addEventListener('click', () => goToTestimonialPage(-1));
+  document.getElementById('test-next')?.addEventListener('click', () => goToTestimonialPage(1));
+  document.getElementById('testimonial-filter')?.addEventListener('change', e => {
+    testimonialFilter = e.target.value || 'all';
+    testimonialPage = 1;
+    loadTestimonials();
+  });
+  document.getElementById('refresh-testimonials-btn')?.addEventListener('click', refreshTestimonials);
   document.getElementById('proj-prev')?.addEventListener('click', () => goToProjectPage(-1));
   document.getElementById('proj-next')?.addEventListener('click', () => goToProjectPage(1));
 

@@ -550,7 +550,51 @@ function nextCase(delta) {
   renderCaseStudy();
 }
 
-// ===== TESTIMONIALS =====
+// ===== CV DOWNLOAD =====
+async function downloadCV() {
+  try {
+    const btn = document.getElementById('download-cv-btn');
+    if (!btn) return;
+
+    btn.disabled = true;
+    btn.textContent = 'Getting CV...';
+
+    // Fetch CV download link
+    const res = await fetch(`${API_BASE}/resume/download`);
+    if (!res.ok) throw new Error('Failed to get CV');
+
+    const data = await res.json();
+    const downloadUrl = data.downloadUrl;
+
+    // Track download
+    try {
+      fetch(`${API_BASE}/resume/track`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' }
+      }).catch(() => {});
+    } catch {
+      // Fail silently
+    }
+
+    // Open download
+    if (downloadUrl) {
+      window.open(downloadUrl, '_blank');
+    }
+
+    btn.disabled = false;
+    btn.textContent = '📄 Download CV';
+  } catch (e) {
+    console.error('Error downloading CV:', e);
+    alert('Failed to download CV. Please try again.');
+    const btn = document.getElementById('download-cv-btn');
+    if (btn) {
+      btn.disabled = false;
+      btn.textContent = '📄 Download CV';
+    }
+  }
+}
+
+// ===== LEGACY TESTIMONIALS =====
 const testimonials = [
   {
     quote: 'Reyhan paired strong security instincts with pragmatic delivery. We shipped faster and safer.',
@@ -960,6 +1004,146 @@ function initMobileNav() {
   });
 }
 
+// ===== TESTIMONIALS =====
+async function loadTestimonials() {
+  const grid = document.getElementById('testimonials-grid');
+  if (!grid) return;
+
+  grid.innerHTML = `<div class="empty-state">${t('testimonials_loading')}</div>`;
+
+  try {
+    const res = await fetch(`${API_BASE}/testimonials?page=1&limit=9`);
+    if (!res.ok) throw new Error('Failed to load testimonials');
+
+    const data = await res.json();
+    const testimonials = data.data || [];
+
+    if (!testimonials.length) {
+      grid.innerHTML = `<div class="empty-state">No testimonials yet. Be the first to share!</div>`;
+      return;
+    }
+
+    let html = '';
+    for (const t of testimonials) {
+      const stars = '⭐'.repeat(Math.min(5, Math.max(1, t.rating || 5)));
+      html += `
+        <div class="testimonial-card">
+          <div class="testimonial-stars">${stars}</div>
+          <p class="testimonial-text">"${escapeHtml(t.content)}"</p>
+          <div class="testimonial-author">
+            <strong>${escapeHtml(t.author)}</strong>
+            ${t.position ? `<span class="testimonial-role">${escapeHtml(t.position)}</span>` : ''}
+            ${t.company ? `<span class="testimonial-company">${escapeHtml(t.company)}</span>` : ''}
+          </div>
+        </div>
+      `;
+    }
+    grid.innerHTML = html;
+  } catch (e) {
+    console.error('Error loading testimonials:', e);
+    grid.innerHTML = `<div class="empty-state">Unable to load testimonials at this time</div>`;
+  }
+}
+
+function setupTestimonialModal() {
+  const modal = document.getElementById('testimonial-modal');
+  const btn = document.getElementById('add-testimonial-btn');
+  const closeBtn = document.getElementById('testimonial-modal-close');
+  const cancelBtn = document.getElementById('testimonial-modal-cancel');
+  const form = document.getElementById('testimonial-form');
+  const ratingInput = document.getElementById('rating-input');
+
+  if (!modal || !btn) return;
+
+  // Open modal
+  btn.addEventListener('click', () => {
+    modal.setAttribute('aria-hidden', 'false');
+    modal.classList.add('open');
+    form.reset();
+    document.querySelectorAll('#rating-input .star').forEach((s, i) => {
+      if (i === 4) s.classList.add('active');
+      else s.classList.remove('active');
+    });
+    document.getElementById('testimonial-rating').value = '5';
+  });
+
+  // Close modal
+  const closeModal = () => {
+    modal.setAttribute('aria-hidden', 'true');
+    modal.classList.remove('open');
+  };
+
+  closeBtn?.addEventListener('click', closeModal);
+  cancelBtn?.addEventListener('click', closeModal);
+
+  // Close on outside click
+  modal.addEventListener('click', (e) => {
+    if (e.target === modal) closeModal();
+  });
+
+  // Rating stars
+  document.querySelectorAll('#rating-input .star').forEach(star => {
+    star.addEventListener('click', (e) => {
+      e.preventDefault();
+      const rating = star.dataset.rating;
+      document.getElementById('testimonial-rating').value = rating;
+      document.querySelectorAll('#rating-input .star').forEach((s, i) => {
+        if (i < rating) s.classList.add('active');
+        else s.classList.remove('active');
+      });
+    });
+  });
+
+  // Submit form
+  form?.addEventListener('submit', async (e) => {
+    e.preventDefault();
+
+    const author = document.getElementById('testimonial-name').value.trim();
+    const position = document.getElementById('testimonial-position').value.trim();
+    const company = document.getElementById('testimonial-company').value.trim();
+    const email = document.getElementById('testimonial-email').value.trim();
+    const content = document.getElementById('testimonial-content').value.trim();
+    const rating = parseInt(document.getElementById('testimonial-rating').value, 10);
+
+    if (!author || !email || !content) {
+      alert('Please fill in all required fields');
+      return;
+    }
+
+    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+      alert('Please enter a valid email');
+      return;
+    }
+
+    const btn = form.querySelector('button[type="submit"]');
+    btn.disabled = true;
+    btn.textContent = 'Submitting...';
+
+    try {
+      const res = await fetch(`${API_BASE}/testimonials`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ author, position, company, email, content, rating })
+      });
+
+      const data = await res.json();
+
+      if (res.ok) {
+        alert('Thank you! Your testimonial has been submitted and is pending approval.');
+        closeModal();
+        loadTestimonials();
+      } else {
+        alert(`Error: ${data.message || 'Failed to submit testimonial'}`);
+      }
+    } catch (e) {
+      alert(`Error: ${e.message}`);
+    } finally {
+      btn.disabled = false;
+      btn.textContent = 'Submit Testimonial';
+    }
+  });
+}
+
 // ===== INIT =====
 document.addEventListener('DOMContentLoaded', () => {
   applyAdminEmailToUI(DEFAULT_ADMIN_EMAIL);
@@ -1020,12 +1204,19 @@ document.addEventListener('DOMContentLoaded', () => {
   // Contact
   document.getElementById('contact-form')?.addEventListener('submit', handleContactSubmit);
 
+  // CV Download
+  document.getElementById('download-cv-btn')?.addEventListener('click', downloadCV);
+
   // Terminal
   initTerminal();
 
   // Scroll
   initSmoothScroll();
   initMobileNav();
+
+  // Testimonials
+  loadTestimonials();
+  setupTestimonialModal();
 
   // Scroll animations (slight delay for DOM paint)
   setTimeout(initScrollAnimation, 100);

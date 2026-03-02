@@ -27,6 +27,8 @@ const { cache } = require('./utils/cache');
 const projectsRouter = require('./routes/projects');
 const contactRouter = require('./routes/contact');
 const analyticsRouter = require('./routes/analytics');
+const testimonialsRouter = require('./routes/testimonials');
+const resumeRouter = require('./routes/resume');
 
 const isProduction = process.env.NODE_ENV === 'production';
 const OLD_DOMAIN = 'website-portofolio-2.vercel.app';
@@ -261,6 +263,8 @@ function createApp() {
 
   app.use('/api/projects', projectsRouter);
   app.use('/api/contact', contactRouter);
+  app.use('/api/testimonials', testimonialsRouter);
+  app.use('/api/resume', resumeRouter);
   app.use('/api/analytics', analyticsRouter);
 
   app.post('/api/auth/login', loginLimiter, enforceAdminIp, (req, res) => {

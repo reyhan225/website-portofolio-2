@@ -100,7 +100,7 @@
       <div class="hero-cta">
         <a href="#projects" class="btn btn-primary" data-i18n="hero_cta_work">View My Work</a>
         <a href="#contact" class="btn btn-outline" data-i18n="hero_cta_contact">Get In Touch</a>
-        <a href="#contact" class="btn btn-outline" data-i18n="hero_cta_resume">📄 Download CV</a>
+        <button id="download-cv-btn" class="btn btn-outline" data-i18n="hero_cta_resume">📄 Download CV</button>
       </div>
       <div class="hero-stats">
         <div class="stat-item">
@@ -238,6 +238,72 @@
     </div>
   </div>
 </section>
+
+<!-- ===== TESTIMONIALS ===== -->
+<section id="testimonials">
+  <div class="container">
+    <div class="section-header">
+      <div class="section-tag" data-i18n="testimonials_tag">What Others Say</div>
+      <h2 class="section-title" data-i18n="testimonials_title">Client Testimonials</h2>
+    </div>
+    <div id="testimonials-grid" class="testimonials-grid" aria-label="Client testimonials">
+      <div class="empty-state" data-i18n="testimonials_loading">Loading testimonials...</div>
+    </div>
+    <div class="testimonials-cta">
+      <p data-i18n="testimonials_cta">Want to share your experience working with me?</p>
+      <button id="add-testimonial-btn" class="btn btn-secondary" data-i18n="testimonials_share_btn">Share Your Feedback</button>
+    </div>
+  </div>
+</section>
+
+<!-- Modal for Adding Testimonial -->
+<div id="testimonial-modal" class="modal" role="dialog" aria-labelledby="modal-title" aria-hidden="true">
+  <div class="modal-content">
+    <div class="modal-header">
+      <h3 id="modal-title" data-i18n="testimonials_form_title">Share Your Testimonial</h3>
+      <button class="modal-close" id="testimonial-modal-close" aria-label="Close modal">&times;</button>
+    </div>
+    <form id="testimonial-form" novalidate>
+      <div class="form-group">
+        <label for="testimonial-name" data-i18n="form_name">Your Name *</label>
+        <input type="text" id="testimonial-name" name="author" placeholder="John Doe" required aria-required="true" />
+      </div>
+      <div class="form-row">
+        <div class="form-group">
+          <label for="testimonial-position" data-i18n="testimonials_position">Position</label>
+          <input type="text" id="testimonial-position" name="position" placeholder="CEO, CTO, Project Manager..." />
+        </div>
+        <div class="form-group">
+          <label for="testimonial-company" data-i18n="testimonials_company">Company</label>
+          <input type="text" id="testimonial-company" name="company" placeholder="Your Company" />
+        </div>
+      </div>
+      <div class="form-group">
+        <label for="testimonial-email" data-i18n="form_email">Email Address *</label>
+        <input type="email" id="testimonial-email" name="email" placeholder="your@email.com" required aria-required="true" />
+      </div>
+      <div class="form-group">
+        <label data-i18n="testimonials_rating">Rating *</label>
+        <div class="rating-input" id="rating-input">
+          <button type="button" class="star" data-rating="1" aria-label="1 star">⭐</button>
+          <button type="button" class="star" data-rating="2" aria-label="2 stars">⭐</button>
+          <button type="button" class="star" data-rating="3" aria-label="3 stars">⭐</button>
+          <button type="button" class="star" data-rating="4" aria-label="4 stars">⭐</button>
+          <button type="button" class="star active" data-rating="5" aria-label="5 stars">⭐</button>
+        </div>
+        <input type="hidden" id="testimonial-rating" name="rating" value="5" required aria-required="true" />
+      </div>
+      <div class="form-group form-group-full">
+        <label for="testimonial-content" data-i18n="form_message">Your Testimonial *</label>
+        <textarea id="testimonial-content" name="content" rows="4" placeholder="Share your experience working with me..." required aria-required="true"></textarea>
+      </div>
+      <div class="form-buttons">
+        <button type="submit" class="btn btn-primary" data-i18n="form_submit">Submit Testimonial</button>
+        <button type="button" id="testimonial-modal-cancel" class="btn btn-secondary" data-i18n="form_cancel">Cancel</button>
+      </div>
+    </form>
+  </div>
+</div>
 
 <!-- ===== CASE STUDIES (Carousel) ===== -->
 <section id="casestudy">

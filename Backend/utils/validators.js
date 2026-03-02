@@ -99,8 +99,70 @@ function validateContactPayload(body) {
   return { ok: true };
 }
 
+function validateTestimonialPayload(body, { partial = false } = {}) {
+  if (!body || typeof body !== 'object') {
+    return 'Invalid request body';
+  }
+
+  const requiredFields = ['author', 'content', 'rating'];
+  if (!partial) {
+    for (const field of requiredFields) {
+      if (!isNonEmptyString(body[field]) && field !== 'rating') {
+        return `${field} is required`;
+      }
+      if (field === 'rating' && body.rating === undefined) {
+        return `${field} is required`;
+      }
+    }
+  }
+
+  if (body.author !== undefined && typeof body.author !== 'string') {
+    return 'author must be a string';
+  }
+  if (body.position !== undefined && typeof body.position !== 'string') {
+    return 'position must be a string';
+  }
+  if (body.company !== undefined && typeof body.company !== 'string') {
+    return 'company must be a string';
+  }
+  if (body.content !== undefined && typeof body.content !== 'string') {
+    return 'content must be a string';
+  }
+  if (body.email !== undefined && typeof body.email !== 'string') {
+    return 'email must be a string';
+  }
+  if (body.rating !== undefined && (typeof body.rating !== 'number' || body.rating < 1 || body.rating > 5)) {
+    return 'rating must be a number between 1 and 5';
+  }
+  if (body.approved !== undefined && typeof body.approved !== 'boolean') {
+    return 'approved must be a boolean';
+  }
+
+  if (isNonEmptyString(body.author) && body.author.trim().length > 100) {
+    return 'author is too long (max 100 characters)';
+  }
+  if (isNonEmptyString(body.position) && body.position.trim().length > 100) {
+    return 'position is too long (max 100 characters)';
+  }
+  if (isNonEmptyString(body.company) && body.company.trim().length > 100) {
+    return 'company is too long (max 100 characters)';
+  }
+  if (isNonEmptyString(body.content) && body.content.trim().length > 1000) {
+    return 'content is too long (max 1000 characters)';
+  }
+  if (isNonEmptyString(body.content) && body.content.trim().length < 20) {
+    return 'content is too short (min 20 characters)';
+  }
+  if (body.email && !isValidEmail(body.email)) {
+    return 'Please enter a valid email address';
+  }
+
+  return null;
+}
+
 module.exports = {
   validateLoginPayload,
   validateProjectPayload,
-  validateContactPayload
+  validateContactPayload,
+  validateTestimonialPayload
 };
