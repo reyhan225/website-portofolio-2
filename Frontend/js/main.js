@@ -557,7 +557,8 @@ async function downloadCV() {
     if (!btn) return;
 
     btn.disabled = true;
-    btn.textContent = 'Getting CV...';
+    btn.classList.add('btn-loading');
+    btn.textContent = '';
 
     // Fetch CV download link
     const res = await fetch(`${API_BASE}/resume/download`);
@@ -581,15 +582,27 @@ async function downloadCV() {
       window.open(downloadUrl, '_blank');
     }
 
-    btn.disabled = false;
-    btn.textContent = '📄 Download CV';
-  } catch (e) {
-    console.error('Error downloading CV:', e);
-    alert('Failed to download CV. Please try again.');
-    const btn = document.getElementById('download-cv-btn');
-    if (btn) {
+    // Success animation
+    btn.classList.remove('btn-loading');
+    btn.textContent = '✓ CV Downloaded!';
+    
+    // Reset button after 2 seconds
+    setTimeout(() => {
       btn.disabled = false;
       btn.textContent = '📄 Download CV';
+    }, 2000);
+  } catch (e) {
+    console.error('Error downloading CV:', e);
+    const btn = document.getElementById('download-cv-btn');
+    if (btn) {
+      btn.classList.remove('btn-loading');
+      btn.textContent = '❌ Try Again';
+      btn.disabled = false;
+      
+      // Reset after 2 seconds
+      setTimeout(() => {
+        btn.textContent = '📄 Download CV';
+      }, 2000);
     }
   }
 }
